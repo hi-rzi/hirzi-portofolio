@@ -127,6 +127,12 @@
 
   /* ---------- Experience ---------- */
   .exp-intro{ color:var(--ink-soft); max-width:70ch; margin-bottom:30px; font-size:16.5px; }
+  .exp-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
+  .exp-card{ background:var(--card-bg); border:1px solid var(--paper-line); border-radius:8px; padding:22px; display:flex; flex-direction:column; gap:10px; }
+  .exp-card .num{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); font-weight:600; }
+  .exp-card h3{ font-size:19px; font-weight:600; }
+  .exp-card p{ font-size:14px; color:var(--ink-soft); margin:0; }
+  .exp-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
   .relay-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:14px; margin-bottom:14px; }
   .relay-card{
     background:var(--card-bg); border:1px solid var(--paper-line); border-radius:6px; padding:16px 18px;
@@ -155,6 +161,15 @@
   .career p{ max-width:60ch; color:var(--ink-soft); font-size:16.5px; }
   .career-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--ink-soft); }
   .career-list li::before{ content:"→ "; color:var(--teal); }
+
+  /* ---------- Organizations ---------- */
+  .org-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
+  .org-card{ background:var(--card-bg); border:1px solid var(--paper-line); border-radius:8px; padding:22px; display:flex; flex-direction:column; gap:10px; }
+  .org-card .num{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); font-weight:600; }
+  .org-card h3{ font-size:19px; font-weight:600; }
+  .org-card p{ font-size:14px; color:var(--ink-soft); margin:0; }
+  .exp-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+  .tag-sm{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--teal); background:rgba(15,155,138,0.1); padding:3px 8px; border-radius:3px; }
 
   /* ---------- Sports ---------- */
   #sports{
@@ -207,7 +222,7 @@
 
   <header class="hero wrap">
     <p class="eyebrow">Electrical &amp; Electronic Engineering Student </p>
-    <h1>Hirzi Fakhru Dzaki Hidayat<em>.</em></h1>
+    <h1>Hirzi Fakhru Dzaki Hidayat</h1>
     <p class="tagline">Penultimate year MEng (Hons) Electrical and Electronic Engineering student at the University of Nottingham Malaysia, currently inside a 615 MW coal-fired plant in East Java learning how generators, transformers, and switchgear actually work.</p>
 
     <div class="sld" aria-hidden="false">
@@ -290,19 +305,27 @@
   <section id="experience">
     <div class="wrap">
       <div class="section-head"><span class="section-tag">02</span><h2>Experience</h2></div>
-      <p class="exp-intro">At POMI, I have learned about relay platforms and DCS systems spanning both motor management and transformer/feeder protection — building technical presentations and working with cutting-edge power systems.</p>
-      <div class="relay-row">
-        <div class="relay-card"><div class="model">GE 469</div><div class="role">Motor Management (legacy)</div></div>
-        <div class="relay-card"><div class="model">GE 869</div><div class="role">Motor Management (current)</div></div>
-        <div class="relay-card"><div class="model">GE 350</div><div class="role">Feeder Protection</div></div>
-        <div class="relay-card"><div class="model">GE T60</div><div class="role">Transformer Protection</div></div>
-      </div>
-      <div class="dcs-row">
-        <span class="pill">Emerson Ovation (master DCS)</span>
-        <span class="pill">Mark VIe vE</span>
-        <span class="pill">FSSS — Allen-Bradley</span>
-        <span class="pill">Single-Line Diagrams</span>
-        <span class="pill">Switchgear &amp; Transformers</span>
+      <div class="exp-grid">
+        <div class="exp-card">
+          <span class="num">1</span>
+          <h3>Internship</h3>
+          <p>POMI — Paiton Operations &amp; Maintenance Indonesia</p>
+          <p>June 2026 – Present</p>
+          <p>POMI, I have learned about relay platforms and DCS systems spanning both motor management and transformer/feeder protection — building technical presentations and working with cutting-edge power systems.</p>
+        </div>
+        <div class="relay-row">
+          <div class="relay-card"><div class="model">GE 469</div><div class="role">Motor Management (legacy)</div></div>
+          <div class="relay-card"><div class="model">GE 869</div><div class="role">Motor Management (current)</div></div>
+          <div class="relay-card"><div class="model">GE 350</div><div class="role">Feeder Protection</div></div>
+          <div class="relay-card"><div class="model">GE T60</div><div class="role">Transformer Protection</div></div>
+        </div>
+        <div class="dcs-row">
+          <span class="pill">Emerson Ovation (master DCS)</span>
+          <span class="pill">Mark VIe vE</span>
+          <span class="pill">FSSS — Allen-Bradley</span>
+          <span class="pill">Single-Line Diagrams</span>
+          <span class="pill">Switchgear &amp; Transformers</span>
+        </div>
       </div>
     </div>
   </section>
@@ -312,19 +335,19 @@
       <div class="section-head"><span class="section-tag">03</span><h2>Projects</h2></div>
       <div class="project-grid">  
         <div class="project-card">
-          <span class="num">0</span>
+          <span class="num">1</span>
           <h3>Isolated Two Switch Forward Converter</h3>
-          <p> Designed and built a prototype of a closed-loop isolated two switch forward converter.</p>
+          <p>Designed and built a prototype of a closed-loop isolated two switch forward converter as part of a Energy Design Group Project.</p>
           <div class="project-tags"><span class="tag-sm">Power Electronics</span><span class="tag-sm">Control Circuit</span></div>
-        <div>
+      </div>
         <div class="project-card">
-          <span class="num">0</span>
+          <span class="num">2</span>
           <h3>Grid-Connected PV System Design</h3>
           <p>Sized and reported a PV system using ENERGYEA EA300P modules and a DEYE SUN-20K-G04 inverter as part of a group coursework project.</p>
           <div class="project-tags"><span class="tag-sm">Solar PV</span><span class="tag-sm">System Design</span></div>
         </div>
         <div class="project-card">
-          <span class="num">0</span>
+          <span class="num">3</span>
           <h3>Doppler Radar Speed Detection</h3>
           <p>Embedded system on an STM32 (comparator and ADC/FFT methods) communicating via RS485 to a Xilinx CoolRunner-II CPLD driving a 7-segment display.</p>
           <div class="project-tags"><span class="tag-sm">STM32</span><span class="tag-sm">CPLD</span><span class="tag-sm">Embedded Systems</span></div>
@@ -367,13 +390,27 @@
     </div>
   </section>
 
+  <section>
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">06</span><h2>Organizations</h2></span></div>
+      <div class="org-grid">  
+        <div class="org-card">
+          <span class="num">1</span>
+          <h3>Indonesian Society Secretary - 2026/27</h3>
+          <p>Responsible for organizing events and managing communications within the Indonesian Society.</p>
+          <div class="exp-tags"><span class="tag-sm">Leadership</span><span class="tag-sm">Event Management</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+      
   <section id="sports">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">06</span><h2>Sports &amp; Recreation</h2></div>
+      <div class="section-head"><span class="section-tag">07</span><h2>Sports &amp; Recreation</h2></div>
       <p class="sports-desc">Beyond engineering, I'm passionate about staying active and competitive. Sports have shaped my discipline and resilience — qualities that translate directly into technical problem-solving.</p>
       <div class="sport-grid">
-        <div class="sport-card"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Striker and midfielder, playing in university league. Football taught me teamwork and tactical thinking.</div></div>
-        <div class="sport-card"><div class="name">Badminton</div><div class="level">Competitive</div><div class="description">Represented university in tournaments. Quick reflexes and precision are key.</div></div>
+        <div class="sport-card"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Actively competed in many sports events including prestigous SOP (Schools of Olympics) Qatar.</div></div>
+        <div class="sport-card"><div class="name">Futsal</div><div class="level">Competitive</div><div class="description">Represented university in national league for Higher Institutions.</div></div>
         <div class="sport-card"><div class="name">Swimming</div><div class="level">Recreational</div><div class="description">Endurance training and a way to maintain fitness balance alongside demanding coursework.</div></div>
         <div class="sport-card"><div class="name">Gym Training</div><div class="level">Regular</div><div class="description">Strength and conditioning to maintain physical resilience for long technical problem-solving sessions.</div></div>
       </div>
@@ -382,7 +419,7 @@
 
   <footer id="contact">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">07</span><h2>Contact</h2></div>
+      <div class="section-head"><span class="section-tag">08</span><h2>Contact</h2></div>
       <p style="color:var(--ink-soft); max-width:50ch;">Open to conversations about internships, protection engineering, or the Gulf EPC path — reach out any time.</p>
       <div class="contact-row">
         <a href="mailto:hirzi.fdh@gmail.com">hirzi.fdh@gmail.com</a>
