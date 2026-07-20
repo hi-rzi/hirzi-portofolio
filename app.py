@@ -18,7 +18,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 class Advanced87GRelay:
     def __init__(self, mva_rated, kv_rated, ct_ratio_N, ct_ratio_T, 
                  i_pickup, slope_1, i_breakpoint, slope_2, i_unrestrained,
-                 harmonic_block_threshold=15.0, convention="IEEE"):
+                 harmonic_block_threshold=15.0, convention="IEEE", ct_polarity="OPPOSITE"):
         self.mva_rated = mva_rated
         self.kv_rated = kv_rated
         self.ct_ratio_N = ct_ratio_N
@@ -30,6 +30,7 @@ class Advanced87GRelay:
         self.i_unrestrained = i_unrestrained
         self.harmonic_block_threshold = harmonic_block_threshold
         self.convention = convention.upper()
+        self.ct_polarity = ct_polarity
 
         # Rated primary and secondary currents
         self.i_rated_pri = (mva_rated * 1000.0) / (math.sqrt(3) * kv_rated) if kv_rated > 0 else 1.0
@@ -45,11 +46,11 @@ class Advanced87GRelay:
 
     def evaluate_phase(self, i_neutral_pri, angle_N_deg, i_terminal_pri, angle_T_deg, harmonic_2nd_pct=0.0):
         # Convert to Complex Secondary Per-Unit Currents
-        i_N_sec_mag = i_neutral_pri / self.ct_ratio_N
-        i_T_sec_mag = i_terminal_pri / self.ct_ratio_T
+        i_N_sec_mag = i_neutral_pri / self.ct_ratio_N if self.ct_ratio_N > 0 else 0
+        i_T_sec_mag = i_terminal_pri / self.ct_ratio_T if self.ct_ratio_T > 0 else 0
 
-        i_N_pu_mag = i_N_sec_mag / self.i_rated_sec_N
-        i_T_pu_mag = i_T_sec_mag / self.i_rated_sec_T
+        i_N_pu_mag = i_N_sec_mag / self.i_rated_sec_N if self.i_rated_sec_N > 0 else 0
+        i_T_pu_mag = i_T_sec_mag / self.i_rated_sec_T if self.i_rated_sec_T > 0 else 0
 
         # Complex vector currents (phasors)
         rad_N = math.radians(angle_N_deg)
@@ -57,8 +58,12 @@ class Advanced87GRelay:
         vec_N_pu = cmath.rect(i_N_pu_mag, rad_N)
         vec_T_pu = cmath.rect(i_T_pu_mag, rad_T)
 
-        # Vector Differential Operating Current: I_op = |I_T - I_N|
-        vec_op = vec_T_pu - vec_N_pu
+        # Vector Differential Operating Current: I_op
+        if self.ct_polarity == "SAME":
+            vec_op = vec_T_pu + vec_N_pu
+        else:
+            vec_op = vec_T_pu - vec_N_pu
+
         i_op_pu = abs(vec_op)
 
         # Restraining Current Calculation
@@ -77,13 +82,13 @@ class Advanced87GRelay:
         is_restrained_trip = (i_op_pu > i_threshold_pu) and not harmonic_blocked
         is_trip = is_unrestrained_trip or is_restrained_trip
 
-        status_text = "SAFE 🟢"
+        status_text = "SAFE"
         if is_unrestrained_trip:
-            status_text = "UNRESTRAINED TRIP ⚡"
+            status_text = "UNRESTRAINED TRIP"
         elif is_restrained_trip:
-            status_text = "SLOPE TRIP 🛑"
+            status_text = "SLOPE TRIP"
         elif harmonic_blocked and (i_op_pu > i_threshold_pu):
-            status_text = "HARMONIC BLOCKED 🔒"
+            status_text = "HARMONIC BLOCKED"
 
         return {
             "i_op_pu": i_op_pu,
@@ -104,9 +109,9 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
     story = []
     styles = getSampleStyleSheet()
 
-    # Title & Header
-    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=18, textColor=colors.HexColor("#1E3A8A"))
-    story.append(Paragraph("⚡ Generator Protection (87G/87U) Test Report", title_style))
+    # Title & Header (No Emojis to avoid ReportLab font crashes)
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontSize=16, textColor=colors.HexColor("#1E3A8A"))
+    story.append(Paragraph("Generator Protection (87G/87U) Evaluation Report", title_style))
     story.append(Spacer(1, 10))
 
     meta_text = f"<b>Date/Time:</b> {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | <b>Unit Configuration:</b> {unit_name}"
@@ -141,7 +146,7 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
         e = evals[p]
         results_data.append([p, f"{e['i_op_pu']:.3f}", f"{e['i_rest_pu']:.3f}", f"{e['i_threshold_pu']:.3f}", e['status']])
 
-    t_results = Table(results_data, colWidths=[100, 100, 100, 100, 120])
+    t_results = Table(results_data, colWidths=[90, 90, 90, 100, 150])
     t_results.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1E3A8A")),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
@@ -188,7 +193,12 @@ i_bp = st.sidebar.slider("Breakpoint Knee-point $I_{bp}$ (pu)", 0.5, 4.0, p["bp"
 slope_2 = st.sidebar.slider("Slope 2 (%)", 30, 100, p["s2"], 5)
 i_unrestrained = st.sidebar.slider("High-Set Unrestrained $87U$ (pu)", 3.0, 10.0, p["u87"], 0.5)
 harmonic_block_thresh = st.sidebar.slider("2nd Harmonic Blocking Threshold (%)", 10, 30, 15, 1)
-convention = st.sidebar.radio("Restraint Convention", ["IEEE", "IEC"])
+
+col_conv, col_pol = st.sidebar.columns(2)
+with col_conv:
+    convention = st.radio("Restraint Conv.", ["IEEE", "IEC"])
+with col_pol:
+    ct_polarity = st.radio("CT Polarity", ["OPPOSITE", "SAME"], help="OPPOSITE: I_op = |I_T - I_N|. SAME: I_op = |I_T + I_N|")
 
 # Instantiate Relay Engine
 relay = Advanced87GRelay(
@@ -198,7 +208,8 @@ relay = Advanced87GRelay(
     i_breakpoint=i_bp, slope_2=slope_2, 
     i_unrestrained=i_unrestrained,
     harmonic_block_threshold=harmonic_block_thresh,
-    convention=convention
+    convention=convention,
+    ct_polarity=ct_polarity
 )
 
 # TABS LAYOUT
@@ -327,11 +338,6 @@ with tab2:
     # Calculate required secondary currents to test boundary
     boundary_i_op = relay.calculate_trip_threshold(test_i_rest)
     
-    # Secondary current equations
-    # I_rest = (I1 + I2)/2 -> I1 + I2 = 2 * I_rest
-    # I_op = |I1 - I2| -> I1 - I2 = I_op
-    # I1_sec = (I_rest + I_op/2) * I_rated_sec
-    # I2_sec = (I_rest - I_op/2) * I_rated_sec
     sec_N_pickup = (test_i_rest + boundary_i_op/2.0) * relay.i_rated_sec_N
     sec_T_pickup = (test_i_rest - boundary_i_op/2.0) * relay.i_rated_sec_T
 
