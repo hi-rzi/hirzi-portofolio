@@ -165,7 +165,8 @@ st.caption("Power Plant Relay Evaluation, Vector Analysis, 2nd Harmonic Blocking
 
 # PRESET PROFILES
 PRESETS = {
-    "Unit 7 & 8 - 846 MVA": {"mva": 846.0, "kv": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0},
+    "Unit 7 - 846 MVA": {"mva": 846.0, "kv": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0},
+    "Unit 8 - 846 MVA": {"mva": 846.0, "kv": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0},
     "Custom Configuration": {"mva": 500.0, "kv": 20.0, "ct_n": 16000, "ct_t": 16000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 5.0}
 }
 
