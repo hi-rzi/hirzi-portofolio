@@ -268,16 +268,15 @@ else:
 # PRESET PROFILE MANAGEMENT
 PRESETS = {
     "GENERATOR": {
-        "Gen Unit 7 - 846 MVA": {"mva": 846.0, "kv_pri": 23.0, "kv_sec": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0},
-        "Gen Unit 2 - 50 MVA": {"mva": 50.0, "kv_pri": 13.8, "kv_sec": 13.8, "ct_n": 2500, "ct_t": 2500, "pickup": 0.15, "s1": 15, "bp": 1.0, "s2": 50, "u87": 8.0}
+        "Gen Unit 7 - 846 MVA": {"mva": 846.231, "kv_pri": 23.0, "kv_sec": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0},
+        "Gen Unit 8 - 846 MVA": {"mva": 846.231, "kv_pri": 23.0, "kv_sec": 23.0, "ct_n": 20000, "ct_t": 20000, "pickup": 0.10, "s1": 15, "bp": 1.5, "s2": 60, "u87": 6.0}
     },
     "TRANSFORMER": {
-        "Main Step-Up 300 MVA": {"mva": 300.0, "kv_pri": 220.0, "kv_sec": 18.0, "ct_n": 1000, "ct_t": 12000, "pickup": 0.20, "s1": 25, "bp": 1.2, "s2": 60, "u87": 8.0},
-        "Auxiliary Unit 50 MVA": {"mva": 50.0, "kv_pri": 115.0, "kv_sec": 4.16, "ct_n": 400, "ct_t": 8000, "pickup": 0.25, "s1": 30, "bp": 1.0, "s2": 70, "u87": 10.0}
+        "Main Step-Up 873 MVA": {"mva": 873.6, "kv_pri": 23.0, "kv_sec": 500.0, "ct_n": 1000, "ct_t": 12000, "pickup": 0, "s1": 0, "bp": 0, "s2": 0, "u87": 0},
+        "Auxiliary Unit 112 MVA": {"mva": 112.0, "kv_pri": 23.0, "kv_sec": 13.8, "ct_n": 400, "ct_t": 8000, "pickup": 0, "s1": 0, "bp": 0, "s2": 0, "u87": 0}
     },
     "LINE": {
-        "220kV Intertie - 150km": {"mva": 400.0, "kv_pri": 220.0, "kv_sec": 220.0, "ct_n": 2000, "ct_t": 2000, "pickup": 0.20, "s1": 20, "bp": 1.5, "s2": 50, "u87": 6.0},
-        "115kV Transmission Line": {"mva": 100.0, "kv_pri": 115.0, "kv_sec": 115.0, "ct_n": 800, "ct_t": 800, "pickup": 0.15, "s1": 15, "bp": 1.2, "s2": 45, "u87": 7.0}
+        "500kV Line": {"mva": 400.0, "kv_pri": 550.0, "kv_sec": 550.0, "ct_n": 2000, "ct_t": 2000, "pickup": 0.20, "s1": 20, "bp": 1.5, "s2": 50, "u87": 6.0}
     }
 }
 
@@ -292,10 +291,10 @@ st.sidebar.header("1. Electrical Asset Spec")
 mva = st.sidebar.number_input("Rating Capacity (MVA)", value=p_data["mva"], step=10.0)
 
 if current_mode == "TRANSFORMER":
-    kv_pri = st.sidebar.number_input("HV Primary Winding (kV)", value=p_data["kv_pri"], step=1.0)
-    kv_sec = st.sidebar.number_input("LV Secondary Winding (kV)", value=p_data["kv_sec"], step=1.0)
-    ct_ratio_N = st.sidebar.number_input("HV Side CT Ratio", value=p_data["ct_n"])
-    ct_ratio_T = st.sidebar.number_input("LV Side CT Ratio", value=p_data["ct_t"])
+    kv_pri = st.sidebar.number_input("Primary Winding (kV)", value=p_data["kv_pri"], step=1.0)
+    kv_sec = st.sidebar.number_input("Secondary Winding (kV)", value=p_data["kv_sec"], step=1.0)
+    ct_ratio_N = st.sidebar.number_input("Primary Side CT Ratio", value=p_data["ct_n"])
+    ct_ratio_T = st.sidebar.number_input("Secondary Side CT Ratio", value=p_data["ct_t"])
     vector_group = st.sidebar.selectbox("Vector Transformer Group Shift", ["Yy0", "Dyn11", "Dyn1"], help="Compensates for delta-star physical vector shifts")
 else:
     kv_pri = st.sidebar.number_input("System Rated Voltage (kV)", value=p_data["kv_pri"], step=1.0)
