@@ -18,7 +18,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 # =====================================================================
 class AdvancedDifferentialRelay:
     def __init__(self, mode, mva_rated, kv_rated_pri, kv_rated_sec=None,
-                 ct_ratio_N=1.0, ct_ratio_T=1.0, 
+                 ct_ratio_N=1.0, ct_ratio_T=1.0, ct_secondary_rating=5.0,
                  i_pickup=0.15, slope_1=15.0, i_breakpoint=1.0, slope_2=50.0, i_unrestrained=8.0,
                  harmonic_block_threshold=15.0, harmonic_5th_threshold=35.0, 
                  convention="IEEE", ct_polarity="OPPOSITE",
@@ -27,8 +27,16 @@ class AdvancedDifferentialRelay:
         self.mva_rated = mva_rated
         self.kv_rated_pri = kv_rated_pri
         self.kv_rated_sec = kv_rated_sec if kv_rated_sec else kv_rated_pri
-        self.ct_ratio_N = ct_ratio_N  # In Line mode, this represents End 1 (Local) CT
-        self.ct_ratio_T = ct_ratio_T  # In Line mode, this represents End 2 (Remote) CT
+        # ct_ratio_N / ct_ratio_T are entered as CT nameplate PRIMARY current (e.g. the "2000"
+        # in a "2000:5" CT), matching how CTs are actually specified in the field.
+        # ct_secondary_rating is the CT's rated secondary current (1 A or 5 A), which the
+        # earlier version of this model silently assumed was baked into the ratio already.
+        # The TRUE turns ratio used for all scaling is primary_rating / secondary_rating.
+        self.ct_ratio_N = ct_ratio_N  # In Line mode, this represents End 1 (Local) CT primary rating
+        self.ct_ratio_T = ct_ratio_T  # In Line mode, this represents End 2 (Remote) CT primary rating
+        self.ct_secondary_rating = ct_secondary_rating
+        self.effective_ratio_N = (ct_ratio_N / ct_secondary_rating) if ct_secondary_rating > 0 else ct_ratio_N
+        self.effective_ratio_T = (ct_ratio_T / ct_secondary_rating) if ct_secondary_rating > 0 else ct_ratio_T
         self.i_pickup = i_pickup
         self.s1 = slope_1 / 100.0
         self.i_bp = i_breakpoint
@@ -46,9 +54,10 @@ class AdvancedDifferentialRelay:
         self.i_rated_pri_H = (mva_rated * 1000.0) / (math.sqrt(3) * self.kv_rated_pri) if self.kv_rated_pri > 0 else 1.0
         self.i_rated_pri_L = (mva_rated * 1000.0) / (math.sqrt(3) * self.kv_rated_sec) if self.kv_rated_sec > 0 else 1.0
 
-        # Secondary ratings on both terminals
-        self.i_rated_sec_N = self.i_rated_pri_H / ct_ratio_N if ct_ratio_N > 0 else 1.0
-        self.i_rated_sec_T = self.i_rated_pri_L / ct_ratio_T if ct_ratio_T > 0 else 1.0
+        # Secondary ratings on both terminals — now correctly divides by the TRUE ratio
+        # (primary rating / secondary rating), not the raw nameplate primary rating alone.
+        self.i_rated_sec_N = self.i_rated_pri_H / self.effective_ratio_N if self.effective_ratio_N > 0 else 1.0
+        self.i_rated_sec_T = self.i_rated_pri_L / self.effective_ratio_T if self.effective_ratio_T > 0 else 1.0
 
     def calculate_trip_threshold(self, i_rest_pu):
         """Calculates boundary operating current threshold for dual-slope curve."""
@@ -65,9 +74,9 @@ class AdvancedDifferentialRelay:
         In Line Mode:
             N = End 1 (Local), T = End 2 (Remote)
         """
-        # Step 1: Scale primary currents into secondary terms
-        i_N_sec_mag = i_primary_N / self.ct_ratio_N if self.ct_ratio_N > 0 else 0.0
-        i_T_sec_mag = i_primary_T / self.ct_ratio_T if self.ct_ratio_T > 0 else 0.0
+        # Step 1: Scale primary currents into secondary terms using the TRUE CT ratio
+        i_N_sec_mag = i_primary_N / self.effective_ratio_N if self.effective_ratio_N > 0 else 0.0
+        i_T_sec_mag = i_primary_T / self.effective_ratio_T if self.effective_ratio_T > 0 else 0.0
 
         # Step 2: Convert secondary values into per-unit base settings
         i_N_pu_mag = i_N_sec_mag / self.i_rated_sec_N if self.i_rated_sec_N > 0 else 0.0
@@ -103,7 +112,7 @@ class AdvancedDifferentialRelay:
         if self.mode == "LINE" and self.line_length_km > 0 and self.charging_current_a_per_km > 0:
             total_charging_amps = self.charging_current_a_per_km * self.line_length_km
             # Convert to secondary and then to p.u. (referenced to End 1 Local Base)
-            charging_sec = total_charging_amps / self.ct_ratio_N
+            charging_sec = total_charging_amps / self.effective_ratio_N if self.effective_ratio_N > 0 else 0.0
             charging_pu = charging_sec / self.i_rated_sec_N
             
             # Charging current acts as a continuous reactive fake differential current (+90 deg shift)
@@ -122,8 +131,15 @@ class AdvancedDifferentialRelay:
 
         i_threshold_pu = self.calculate_trip_threshold(i_rest_pu)
 
-        # Step 8: Harmonic Restraint check (Important for Transformers)
-        harmonic_2nd_blocked = (self.mode == "TRANSFORMER" or self.mode == "GENERATOR") and (harmonic_2nd_pct >= self.harmonic_block_threshold)
+        # Step 8: Harmonic Restraint check
+        # 2nd/5th harmonic blocking is a TRANSFORMER-ONLY concept: it exists to distinguish
+        # magnetizing inrush (rich in 2nd harmonic) and overexcitation (rich in 5th harmonic)
+        # from genuine internal faults. Generators do not have a magnetic core that produces
+        # inrush the way a transformer does, so gating a generator's trip decision on these
+        # harmonics is not physically justified and would only mask real internal faults.
+        # Generator differential (87G) schemes instead rely on CT saturation detection /
+        # supervision, which is a different mechanism (see CT saturation modeling).
+        harmonic_2nd_blocked = (self.mode == "TRANSFORMER") and (harmonic_2nd_pct >= self.harmonic_block_threshold)
         harmonic_5th_blocked = (self.mode == "TRANSFORMER") and (harmonic_5th_pct >= self.harmonic_5th_threshold)
         is_blocked = harmonic_2nd_blocked or harmonic_5th_blocked
 
@@ -187,7 +203,7 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
             ["Rated Voltage HV", f"{relay_obj.kv_rated_pri} kV", "Slope 1", f"{relay_obj.s1*100:.1f} %"],
             ["Rated Voltage LV", f"{relay_obj.kv_rated_sec} kV", "Breakpoint", f"{relay_obj.i_bp} pu"],
             ["Vector Group", f"{relay_obj.vector_group}", "Slope 2", f"{relay_obj.s2*100:.1f} %"],
-            ["HV / LV CT Ratios", f"{relay_obj.ct_ratio_N} : {relay_obj.ct_ratio_T}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
+            ["HV / LV CT Ratios", f"{relay_obj.ct_ratio_N:.0f}:{relay_obj.ct_secondary_rating:.0f} / {relay_obj.ct_ratio_T:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
         ]
     elif relay_obj.mode == "LINE":
         params_data = [
@@ -196,7 +212,7 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
             ["System Voltage", f"{relay_obj.kv_rated_pri} kV", "Slope 1", f"{relay_obj.s1*100:.1f} %"],
             ["Line Length", f"{relay_obj.line_length_km} km", "Breakpoint", f"{relay_obj.i_bp} pu"],
             ["Charging Current rate", f"{relay_obj.charging_current_a_per_km} A/km", "Slope 2", f"{relay_obj.s2*100:.1f} %"],
-            ["Local / Remote CT", f"{relay_obj.ct_ratio_N} : {relay_obj.ct_ratio_T}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
+            ["Local / Remote CT", f"{relay_obj.ct_ratio_N:.0f}:{relay_obj.ct_secondary_rating:.0f} / {relay_obj.ct_ratio_T:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
         ]
     else:  # GENERATOR
         params_data = [
@@ -204,8 +220,8 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
             ["Generator Rating", f"{relay_obj.mva_rated} MVA", "Minimum Pickup", f"{relay_obj.i_pickup} pu"],
             ["Rated Voltage", f"{relay_obj.kv_rated_pri} kV", "Slope 1", f"{relay_obj.s1*100:.1f} %"],
             ["Rated Current (Pri)", f"{relay_obj.i_rated_pri_H:.2f} A", "Breakpoint", f"{relay_obj.i_bp} pu"],
-            ["Neutral CT Ratio", f"{relay_obj.ct_ratio_N}", "Slope 2", f"{relay_obj.s2*100:.1f} %"],
-            ["Terminal CT Ratio", f"{relay_obj.ct_ratio_T}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
+            ["Neutral CT Ratio", f"{relay_obj.ct_ratio_N:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Slope 2", f"{relay_obj.s2*100:.1f} %"],
+            ["Terminal CT Ratio", f"{relay_obj.ct_ratio_T:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Unrestrained (87U)", f"{relay_obj.i_unrestrained} pu"]
         ]
 
     t_params = Table(params_data, colWidths=[130, 130, 130, 130])
@@ -293,8 +309,8 @@ mva = st.sidebar.number_input("Rating Capacity (MVA)", value=p_data["mva"], step
 if current_mode == "TRANSFORMER":
     kv_pri = st.sidebar.number_input("Primary Winding (kV)", value=p_data["kv_pri"], step=1.0)
     kv_sec = st.sidebar.number_input("Secondary Winding (kV)", value=p_data["kv_sec"], step=1.0)
-    ct_ratio_N = st.sidebar.number_input("Primary Side CT Ratio", value=p_data["ct_n"])
-    ct_ratio_T = st.sidebar.number_input("Secondary Side CT Ratio", value=p_data["ct_t"])
+    ct_ratio_N = st.sidebar.number_input("Primary Side CT Rating (Primary A, e.g. 2000 in '2000:5')", value=p_data["ct_n"])
+    ct_ratio_T = st.sidebar.number_input("Secondary Side CT Rating (Primary A)", value=p_data["ct_t"])
     vector_group = st.sidebar.selectbox("Vector Transformer Group Shift", ["Yy0", "Dyn11", "Dyn1"], help="Compensates for delta-star physical vector shifts")
 else:
     kv_pri = st.sidebar.number_input("System Rated Voltage (kV)", value=p_data["kv_pri"], step=1.0)
@@ -302,11 +318,24 @@ else:
     vector_group = "Yy0"
     
     if current_mode == "LINE":
-        ct_ratio_N = st.sidebar.number_input("Local Terminal (End 1) CT Ratio", value=p_data["ct_n"])
-        ct_ratio_T = st.sidebar.number_input("Remote Terminal (End 2) CT Ratio", value=p_data["ct_t"])
+        ct_ratio_N = st.sidebar.number_input("Local Terminal (End 1) CT Rating (Primary A)", value=p_data["ct_n"])
+        ct_ratio_T = st.sidebar.number_input("Remote Terminal (End 2) CT Rating (Primary A)", value=p_data["ct_t"])
     else: # GENERATOR
-        ct_ratio_N = st.sidebar.number_input("Neutral Side CT Ratio", value=p_data["ct_n"])
-        ct_ratio_T = st.sidebar.number_input("Terminal Side CT Ratio", value=p_data["ct_t"])
+        ct_ratio_N = st.sidebar.number_input("Neutral Side CT Rating (Primary A, e.g. 20000 in '20000:5')", value=p_data["ct_n"])
+        ct_ratio_T = st.sidebar.number_input("Terminal Side CT Rating (Primary A)", value=p_data["ct_t"])
+
+ct_secondary_rating = st.sidebar.selectbox(
+    "CT Secondary Rating (A)", [1.0, 5.0], index=1,
+    help="The rated secondary current stamped on the CT nameplate (e.g. the '5' in '2000:5'). "
+         "This is applied to both CTs and determines the true turns ratio used in all "
+         "per-unit scaling — entering only the primary rating without this was a labelling bug."
+)
+st.sidebar.caption(
+    f"Effective ratio → Neutral/End1: **{ct_ratio_N:.0f} : {ct_secondary_rating:.0f}** "
+    f"(= {ct_ratio_N/ct_secondary_rating:.1f}:1)  |  "
+    f"Terminal/End2: **{ct_ratio_T:.0f} : {ct_secondary_rating:.0f}** "
+    f"(= {ct_ratio_T/ct_secondary_rating:.1f}:1)"
+)
 
 if current_mode == "LINE":
     st.sidebar.header("🗺️ Line Geometry & Transmission")
@@ -324,8 +353,18 @@ slope_2 = st.sidebar.slider("Slope 2 (%)", 30, 100, p_data["s2"], 5)
 i_unrestrained = st.sidebar.slider("High-Set Unrestrained $87U$ (pu)", 3.0, 15.0, p_data["u87"], 0.5)
 
 st.sidebar.header("3. Blocking Harmonics & Wiring")
-harmonic_block_thresh = st.sidebar.slider("2nd Harmonic Limit (%)", 10, 30, 15, 1, help="Blocks on Transformer Inrush current")
-harmonic_5th_thresh = st.sidebar.slider("5th Harmonic Limit (%)", 20, 50, 35, 1, help="Blocks on Transformer Overexcitation")
+if current_mode == "TRANSFORMER":
+    harmonic_block_thresh = st.sidebar.slider("2nd Harmonic Limit (%)", 10, 30, 15, 1, help="Blocks on Transformer Inrush current")
+    harmonic_5th_thresh = st.sidebar.slider("5th Harmonic Limit (%)", 20, 50, 35, 1, help="Blocks on Transformer Overexcitation")
+else:
+    harmonic_block_thresh = 15.0
+    harmonic_5th_thresh = 35.0
+    if current_mode == "GENERATOR":
+        st.sidebar.caption(
+            "ℹ️ 2nd/5th harmonic blocking is not applicable to generators — "
+            "generators don't produce magnetizing inrush the way transformer "
+            "cores do, so this element is disabled in Generator mode."
+        )
 
 col_conv, col_pol = st.sidebar.columns(2)
 with col_conv:
@@ -336,7 +375,7 @@ with col_pol:
 # Create main relay object
 relay = AdvancedDifferentialRelay(
     mode=current_mode, mva_rated=mva, kv_rated_pri=kv_pri, kv_rated_sec=kv_sec,
-    ct_ratio_N=ct_ratio_N, ct_ratio_T=ct_ratio_T,
+    ct_ratio_N=ct_ratio_N, ct_ratio_T=ct_ratio_T, ct_secondary_rating=ct_secondary_rating,
     i_pickup=i_pickup, slope_1=slope_1, i_breakpoint=i_bp, slope_2=slope_2, i_unrestrained=i_unrestrained,
     harmonic_block_threshold=harmonic_block_thresh, harmonic_5th_threshold=harmonic_5th_thresh,
     convention=convention, ct_polarity=ct_polarity,
@@ -367,7 +406,10 @@ with tab1:
         # Capture Phase inputs in tabs/expanders
         for idx, phase in enumerate(phases):
             with st.expander(f"📌 {phase} Settings", expanded=(phase == "Phase A")):
-                c1, c2, c3 = st.columns(3)
+                if current_mode == "GENERATOR":
+                    c1, c2 = st.columns(2)
+                else:
+                    c1, c2, c3 = st.columns(3)
                 
                 # Default values for anti-parallel current flow under healthy conditions
                 def_val_N = relay.i_rated_pri_H if phase == "Phase A" else 0.0
@@ -382,9 +424,13 @@ with tab1:
                 with c2:
                     i_T = st.number_input(f"End 2 / Secondary Amps [A]", value=def_val_T, key=f"T_i_{phase}")
                     a_T = st.number_input(f"End 2 Angle (°)", value=def_ang_T, key=f"T_a_{phase}")
-                with c3:
-                    h2 = st.number_input(f"2nd Harmonic (%)", value=0.0, key=f"H2_{phase}")
-                    h5 = st.number_input(f"5th Harmonic (%)", value=0.0, key=f"H5_{phase}")
+                if current_mode == "GENERATOR":
+                    h2 = 0.0
+                    h5 = 0.0
+                else:
+                    with c3:
+                        h2 = st.number_input(f"2nd Harmonic (%)", value=0.0, key=f"H2_{phase}")
+                        h5 = st.number_input(f"5th Harmonic (%)", value=0.0, key=f"H5_{phase}")
 
                 inputs[phase] = {"i_N": i_N, "a_N": a_N, "i_T": i_T, "a_T": a_T, "h2": h2, "h5": h5}
 
