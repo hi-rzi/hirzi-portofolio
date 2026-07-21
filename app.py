@@ -20,9 +20,11 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 #      GENERATOR         - GE G60-style dual-breakpoint numerical characteristic:
 #                           flat at Pickup until Break1, Slope1 from Break1 to Break2,
 #                           Slope2 beyond Break2. Settings/ranges per G60 instruction manual.
-#      GENERATOR_LEGACY   - fixed single-slope electromechanical/solid-state relay
-#                           (e.g. GE CFD22B4A): one slope from zero restraint, no
-#                           breakpoints, no field-adjustable 2nd slope or high-set.
+#      GENERATOR_LEGACY   - GE CFD22A/B (e.g. CFD22B4A), per GEK-34124E: a PRODUCT-RESTRAINT
+#                           relay. Restraint is based on the SMALLER of the two terminal
+#                           currents (not their average/sum), balancing at a fixed 10%
+#                           differential up to ~rated current. No breakpoints, no field-
+#                           adjustable 2nd slope, no unrestrained high-set element.
 # =====================================================================
 class AdvancedDifferentialRelay:
     def __init__(self, mode, mva_rated, kv_rated,
@@ -80,8 +82,10 @@ class AdvancedDifferentialRelay:
     def calculate_trip_threshold(self, i_rest_pu):
         """Calculates boundary operating current threshold.
 
-        GENERATOR_LEGACY (e.g. CFD22B4A): single fixed percentage slope starting from
-        zero restraint current — this hardware has no flat pickup zone or breakpoints.
+        GENERATOR_LEGACY (GE CFD22A/B, per GEK-34124E): single fixed 10% slope starting
+        from zero restraint current — no flat pickup zone, no breakpoints. Note that
+        i_rest_pu here is the SMALLER of the two terminal currents (see evaluate_protection),
+        not an average/sum, per the manual's product-restraint principle.
 
         GENERATOR (GE G60 numerical, per instruction manual):
             Ir <= Break1            -> Threshold = Pickup                        (flat zone)
@@ -131,7 +135,16 @@ class AdvancedDifferentialRelay:
         i_op_pu = abs(vec_op)
 
         # Step 5: Restraining Current Calculation
-        if self.convention == "IEEE":
+        # GENERATOR_LEGACY (GE CFD22A/B, per GEK-34124): this is a PRODUCT-RESTRAINT relay.
+        # Operating torque is proportional to the square of the current difference; restraining
+        # torque is proportional to the PRODUCT of the two terminal currents. The manual states
+        # pickup balances "when the differential current is 10% of the smaller of the other two"
+        # — so the restraint reference is the smaller of the two currents, not their average or
+        # sum. This is fixed by the relay's physical design, not user-selectable, so the
+        # IEEE/IEC convention toggle does not apply to this mode.
+        if self.mode == "GENERATOR_LEGACY":
+            i_rest_pu = min(abs(vec_T_pu), abs(vec_N_pu))
+        elif self.convention == "IEEE":
             i_rest_pu = (abs(vec_T_pu) + abs(vec_N_pu)) / 2.0
         else:
             i_rest_pu = abs(vec_T_pu) + abs(vec_N_pu)
@@ -190,7 +203,7 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
             ["Parameter", "Value", "Parameter", "Value"],
             ["Generator Rating", f"{relay_obj.mva_rated} MVA", "Target/Seal-in Pickup", f"{relay_obj.target_amps} A sec." if relay_obj.target_amps is not None else "N/A"],
             ["Rated Voltage", f"{relay_obj.kv_rated} kV", "Equivalent Pickup", f"{relay_obj.i_pickup:.3f} pu"],
-            ["Rated Current (Pri)", f"{relay_obj.i_rated_pri:.2f} A", "Restraint Slope (assumed)", f"{relay_obj.s1*100:.1f} %"],
+            ["Rated Current (Pri)", f"{relay_obj.i_rated_pri:.2f} A", "Restraint Slope (GEK-34124E)", f"{relay_obj.s1*100:.1f} %"],
             ["Neutral CT Ratio", f"{relay_obj.ct_ratio_N:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Breakpoints / 2nd Slope / High-Set", "N/A - fixed by relay design"],
             ["Terminal CT Ratio", f"{relay_obj.ct_ratio_T:.0f}:{relay_obj.ct_secondary_rating:.0f}", "Relay Type", "GE CFD22B4A (GEK-34124)"]
         ]
@@ -274,12 +287,16 @@ PRESETS = {
     "GENERATOR_LEGACY": {
         # Real Paiton Units 7 & 8 generator differential data, from setting sheet
         # P101-17-1823.16-0001 Rev.5 and generator nameplate:
-        #   kVA=846,231 / 23,000V / CT ratio 24000:5 / relay GE CFD22B4A (GEK-34124)
-        #   "Target and Seal-in" pickup set to 0.2 A secondary.
-        # The 10% slope value below is NOT from the setting sheet (the CFD22B4A has no
-        # separate field-adjustable slope setting — it's fixed into the relay's internal
-        # design) — treat it as a placeholder until confirmed against the actual CFD22B4A
-        # characteristic curve in GEK-34124 (or Appendix B of the setting document).
+        #   kVA=846,231 / 23,000V / CT ratio 24000:5 / relay GE CFD22B4A (GEK-34124E)
+        #   "Target and Seal-in" pickup set to 0.2 A secondary (factory default).
+        # The 10% slope below IS confirmed by GEK-34124E's Principles of Operation section:
+        # this relay is a product-restraint type whose operating/restraining torques balance
+        # "when the differential current is 10% of the smaller of the other two, up to
+        # approximately normal current" — this is fixed by internal design, not a field
+        # setting. Above ~normal (rated) current, the manual notes the differential circuit
+        # saturates, which INCREASES the effective margin beyond the flat 10% line (see
+        # Figure 7) — that extra margin is not modeled here since it's shown only as a curve,
+        # not a formula, in the manual.
         "Paiton Unit 7 - CFD22B4A (846 MVA)": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10},
         "Paiton Unit 8 - CFD22B4A (846 MVA)": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10}
     }
@@ -317,20 +334,23 @@ i_unrestrained_value = None
 
 if current_mode == "GENERATOR_LEGACY":
     st.sidebar.caption(
-        "ℹ️ This relay (e.g. GE CFD22B4A) has only ONE field setting — everything else "
-        "below is fixed by the relay's internal design, not adjustable on site."
+        "ℹ️ Per GEK-34124E: this relay (GE CFD22A/B, e.g. CFD22B4A) has only ONE field "
+        "setting — the pickup. Everything else is fixed by the relay's internal "
+        "product-restraint design, not adjustable on site."
     )
     target_amps = st.sidebar.slider(
-        "Target / Seal-in Pickup (Secondary Amps)", 0.2, 1.0, p_data["target_amps"], 0.1,
-        help="The relay's actual nameplate setting range is 0.2–1.0 A secondary — this is "
-             "the ONLY field-adjustable setting on this relay type."
+        "Target / Seal-in Pickup (Secondary Amps)", 0.1, 1.0, p_data["target_amps"], 0.05,
+        help="Factory default is 0.2 A. Per GEK-34124E, it is NOT recommended to set below "
+             "0.1 A, and the rear contact may need up to ~0.25 A to close — verify the actual "
+             "closing current during commissioning."
     )
     slope_1 = st.sidebar.slider(
-        "Assumed Fixed Restraint Slope (%)", 5, 30, p_data["s1"], 1,
-        help="NOT a field setting — this relay's percentage-restraint slope is fixed by its "
-             "internal design and isn't in the setting sheet provided. Treat this as a "
-             "placeholder until confirmed against the actual CFD22B4A characteristic curve "
-             "in GEK-34124."
+        "Restraint Slope (%)", 5, 30, p_data["s1"], 1,
+        help="Confirmed by GEK-34124E's Principles of Operation: this relay balances when "
+             "the differential current is 10% of the SMALLER of the two terminal currents, "
+             "up to approximately rated current. This is fixed by the relay's internal "
+             "design, not a field setting — the slider exists here only to explore 'what if' "
+             "sensitivity; leave at 10% to match the actual hardware."
     )
     i_pickup = 0.0  # overridden inside the relay class from target_amps for this mode
     slope_2 = slope_1
@@ -376,8 +396,9 @@ else:  # GENERATOR - GE G60, ranges/steps per instruction manual
 st.sidebar.header("3. Wiring & Convention")
 if current_mode == "GENERATOR_LEGACY":
     st.sidebar.caption(
-        "ℹ️ This relay has no harmonic restraint capability — it's a fixed "
-        "percentage-differential design with a single pickup setting only."
+        "ℹ️ This relay has no harmonic restraint capability. It's also a **product-restraint** "
+        "type (GEK-34124E) that always balances against the smaller of the two terminal "
+        "currents — the IEEE/IEC toggle below doesn't apply to it and is ignored in this mode."
     )
 else:
     st.sidebar.caption(
