@@ -326,8 +326,8 @@ PRESETS = {
         # Terminal-side CT (above the generator, toward the bus) and the Neutral-side CT
         # (below the generator, toward the neutral grounding transformer) are 24000/5 — the
         # same physical CTs as the legacy CFD22B4A preset below.
-        "Gen Unit 7 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "pickup": 0.10, "s1": 15, "break_1": 1.10, "s2": 60, "break_2": 6.00},
-        "Gen Unit 8 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "pickup": 0.10, "s1": 15, "break_1": 1.10, "s2": 60, "break_2": 6.00}
+        "POMI Unit 7 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "pickup": 0.10, "s1": 15, "break_1": 1.10, "s2": 60, "break_2": 6.00},
+        "POMI Unit 8 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "pickup": 0.10, "s1": 15, "break_1": 1.10, "s2": 60, "break_2": 6.00}
     },
     "GENERATOR_LEGACY": {
         # Real Paiton Units 7 & 8 generator differential data, from setting sheet
@@ -342,8 +342,8 @@ PRESETS = {
         # saturates, which INCREASES the effective margin beyond the flat 10% line (see
         # Figure 7) — that extra margin is not modeled here since it's shown only as a curve,
         # not a formula, in the manual.
-        "Paiton Unit 7 - CFD22B4A (846 MVA)": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10},
-        "Paiton Unit 8 - CFD22B4A (846 MVA)": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10}
+        "POMI Unit 7 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10},
+        "POMI Unit 8 - 846 MVA": {"mva": 846.231, "kv": 23.0, "ct_n": 24000, "ct_t": 24000, "target_amps": 0.2, "s1": 10}
     }
 }
 
