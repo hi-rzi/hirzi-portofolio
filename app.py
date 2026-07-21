@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 import cmath
 import math
@@ -146,6 +147,22 @@ class AdvancedDifferentialRelay:
         }
 
 
+def compute_slope_margin_pct(e):
+    """Positive = % headroom remaining before a slope trip. Negative = % already past threshold."""
+    if e["i_threshold_pu"] > 0:
+        return ((e["i_threshold_pu"] - e["i_op_pu"]) / e["i_threshold_pu"]) * 100.0
+    return 0.0
+
+
+def compute_87u_margin_pct(e, relay_obj):
+    """Positive = % headroom before the unrestrained high-set element operates. None if not applicable."""
+    if relay_obj.i_unrestrained >= 1e5:
+        return None
+    if relay_obj.i_unrestrained > 0:
+        return ((relay_obj.i_unrestrained - e["i_op_pu"]) / relay_obj.i_unrestrained) * 100.0
+    return None
+
+
 # =====================================================================
 # 2. PDF SHIFT LOG REPORT GENERATOR
 # =====================================================================
@@ -198,12 +215,13 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
 
     # Phase Results Table
     story.append(Paragraph("<b>2. Evaluation Results</b>", styles['Heading2']))
-    results_data = [["Phase", "I_op [pu]", "I_rest [pu]", "Threshold [pu]", "Status"]]
+    results_data = [["Phase", "I_op [pu]", "I_rest [pu]", "Threshold [pu]", "Margin [%]", "Status"]]
     for p in phases:
         e = evals[p]
-        results_data.append([p, f"{e['i_op_pu']:.3f}", f"{e['i_rest_pu']:.3f}", f"{e['i_threshold_pu']:.3f}", e['status']])
+        margin = compute_slope_margin_pct(e)
+        results_data.append([p, f"{e['i_op_pu']:.3f}", f"{e['i_rest_pu']:.3f}", f"{e['i_threshold_pu']:.3f}", f"{margin:+.1f}%", e['status']])
 
-    t_results = Table(results_data, colWidths=[90, 90, 90, 100, 150])
+    t_results = Table(results_data, colWidths=[75, 80, 80, 90, 80, 135])
     t_results.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#1E3A8A")),
         ('TEXTCOLOR', (0,0), (-1,0), colors.white),
@@ -224,7 +242,17 @@ def generate_pdf_report(unit_name, relay_obj, evals, phases):
 st.set_page_config(page_title="Generator Differential Relay Suite", layout="wide")
 
 st.title("⚡ Enterprise Generator Differential Protection (87G) Suite")
-st.caption("Active Phase Vector Analysis, Dual-Slope Curve Engine & Secondary Injection Testing")
+st.caption("Active Phase Vector Analysis, Dual-Slope Curve Engine, Scenario Testing & Shift Log Export")
+
+# Persistent session state for the shift test log and sweep table
+if "test_log" not in st.session_state:
+    st.session_state.test_log = []
+if "last_scenario" not in st.session_state:
+    st.session_state.last_scenario = "Manual / Custom"
+
+# TECHNICIAN / SESSION INFO
+st.sidebar.header("👷 Test Session Info")
+tech_name = st.sidebar.text_input("Technician / Tester Name", value="")
 
 # MAIN NAVIGATION MENU - PICK RELAY TYPE
 st.markdown("### 🎛️ Generator Relay Type Select")
@@ -343,7 +371,7 @@ relay = AdvancedDifferentialRelay(
 )
 
 # TABS CONFIG
-tab1, tab2 = st.tabs(["📊 Live Vector Simulation", "🧰 Commissioning & Injection Tool"])
+tab1, tab2, tab3 = st.tabs(["📊 Live Vector Simulation", "🧰 Commissioning & Injection Tool", "🗂️ Test Log & Export"])
 
 
 with tab1:
@@ -366,6 +394,64 @@ with tab1:
         # Generator: both CTs sit on the SAME winding at the same voltage (neutral end vs
         # terminal end).
         n_side_label, t_side_label = "Neutral Side (End 1)", "Terminal Side (End 2)"
+
+        # -------------------------------------------------------------
+        # QUICK SCENARIO LOADER
+        # Pre-fills the phase inputs below with realistic textbook values for common
+        # test/event conditions, so you don't have to hand-derive angles and magnitudes
+        # for every test. Values are illustrative starting points — always compare
+        # against your actual event/test record.
+        # -------------------------------------------------------------
+        st.markdown("#### ⚡ Quick Scenario Loader")
+        scenario = st.selectbox(
+            "Load a test scenario into the phase inputs below",
+            ["Manual / Custom", "Normal Load (Healthy, Balanced)",
+             "External / Through-Fault (Should NOT Trip)",
+             "Internal Fault (Should Trip)",
+             "CT Saturation on Through-Fault (False-Trip Risk)"]
+        )
+        apply_scenario = st.button("↪️ Apply Scenario to Phase Inputs Below")
+
+        if apply_scenario and scenario != "Manual / Custom":
+            base = relay.i_rated_pri
+            for idx, ph in enumerate(phases):
+                ang_N = -120.0 * idx
+                ang_T = ang_N + 180.0 if ct_polarity == "OPPOSITE" else ang_N
+
+                if scenario == "Normal Load (Healthy, Balanced)":
+                    # Balanced full-load current, CTs track each other perfectly -> near-zero operate
+                    i_n, i_t = base, base
+                    a_n, a_t = ang_N, ang_T
+
+                elif scenario == "External / Through-Fault (Should NOT Trip)":
+                    # Large symmetric through-current on all 3 phases, both CTs track it identically
+                    # -> high restraint current, but operate current stays near zero
+                    i_n, i_t = base * 4.0, base * 4.0
+                    a_n, a_t = ang_N, ang_T
+
+                elif scenario == "Internal Fault (Should Trip)":
+                    # Fault current feeds in mainly from the terminal side; little/no current
+                    # returns via the neutral side -> large genuine operate current
+                    i_n, i_t = base * 0.3, base * 5.0
+                    a_n, a_t = ang_N, ang_N  # no 180° reversal -> vectors add as real operate current
+
+                else:  # CT Saturation on Through-Fault
+                    # Same large through-fault as above, but the Terminal CT partially saturates:
+                    # its reported magnitude sags and its phase angle shifts -> spurious operate
+                    # current that could mimic an internal fault if the slope/margin isn't adequate
+                    i_n = base * 5.0
+                    i_t = base * 3.5
+                    a_n = ang_N
+                    a_t = ang_T + 15.0
+
+                st.session_state[f"N_i_{ph}"] = float(i_n)
+                st.session_state[f"N_a_{ph}"] = float(a_n)
+                st.session_state[f"T_i_{ph}"] = float(i_t)
+                st.session_state[f"T_a_{ph}"] = float(a_t)
+
+            st.session_state.last_scenario = scenario
+            st.success(f"Scenario '{scenario}' applied below. Values can still be edited manually.")
+
         inputs = {}
 
         # Capture Phase inputs in tabs/expanders
@@ -403,18 +489,26 @@ with tab1:
         else:
             st.success("✅ SYSTEM HEALTHY (Stability / Restraint Zone)")
 
-        # Summary Metrics Table
+        # Summary Metrics Table (now includes trip margin)
+        has_unrestrained_element = relay.i_unrestrained < 1e5
         table_rows = []
         for p in phases:
             e = evals[p]
-            table_rows.append({
+            margin_slope = compute_slope_margin_pct(e)
+            row = {
                 "Phase": p,
                 "I_op [pu]": f"{e['i_op_pu']:.3f}",
                 "I_rest [pu]": f"{e['i_rest_pu']:.3f}",
                 "Threshold [pu]": f"{e['i_threshold_pu']:.3f}",
-                "Action Verdict": e["status"]
-            })
+                "Margin to Slope Trip": f"{margin_slope:+.1f}%",
+            }
+            if has_unrestrained_element:
+                margin_87u = compute_87u_margin_pct(e, relay)
+                row["Margin to 87U"] = f"{margin_87u:+.1f}%" if margin_87u is not None else "N/A"
+            row["Action Verdict"] = e["status"]
+            table_rows.append(row)
         st.table(table_rows)
+        st.caption("Margin is **positive** = % headroom remaining before that element operates. **Negative** = already past the threshold (tripped on that element).")
 
         # PDF Export Process
         pdf_bytes = generate_pdf_report(selected_preset, relay, evals, phases)
@@ -425,6 +519,65 @@ with tab1:
             mime="application/pdf"
         )
 
+        # -------------------------------------------------------------
+        # LOG THIS TEST TO THE SHIFT LOG
+        # -------------------------------------------------------------
+        st.markdown("---")
+        st.write("**Save this result to the shift test log:**")
+        test_note = st.text_input("Test note (optional)", key="test_note_input")
+        if st.button("📌 Log This Test"):
+            entry = {
+                "Timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "Technician": tech_name if tech_name else "N/A",
+                "Mode": current_mode,
+                "Preset": selected_preset,
+                "Scenario": st.session_state.last_scenario,
+                "Note": test_note,
+            }
+            for p in phases:
+                e = evals[p]
+                entry[f"{p} I_op(pu)"] = round(e["i_op_pu"], 3)
+                entry[f"{p} I_rest(pu)"] = round(e["i_rest_pu"], 3)
+                entry[f"{p} Threshold(pu)"] = round(e["i_threshold_pu"], 3)
+                entry[f"{p} Margin(%)"] = round(compute_slope_margin_pct(e), 1)
+                entry[f"{p} Status"] = e["status"]
+            entry["Overall Verdict"] = "TRIP" if any_trip else "SAFE"
+            st.session_state.test_log.append(entry)
+            st.success("Test logged — see the 🗂️ Test Log & Export tab.")
+
+    # -------------------------------------------------------------
+    # CT / WIRING SANITY CHECKS
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.subheader("🔍 System Health & Wiring Sanity Checks")
+
+    hc1, hc2 = st.columns(2)
+
+    with hc1:
+        ratio_mismatch_pct = abs(relay.effective_ratio_N - relay.effective_ratio_T) / max(relay.effective_ratio_N, relay.effective_ratio_T) * 100.0
+        if ratio_mismatch_pct > 5.0:
+            st.warning(
+                f"⚠️ **CT Ratio Mismatch:** Neutral and Terminal CT turns ratios differ by "
+                f"**{ratio_mismatch_pct:.1f}%**. This alone will produce a false differential "
+                f"current even under perfectly healthy load — verify CT nameplates and wiring "
+                f"before trusting any trip/no-trip result."
+            )
+        else:
+            st.success(f"✅ CT Ratio Match OK (Neutral vs Terminal turns ratio differ by {ratio_mismatch_pct:.1f}%)")
+
+    with hc2:
+        mags = [evals[p]["i_N_pu_mag"] for p in phases]
+        avg_mag = sum(mags) / len(mags) if mags else 0.0
+        max_dev_pct = (max(abs(m - avg_mag) for m in mags) / avg_mag * 100.0) if avg_mag > 0 else 0.0
+        if max_dev_pct > 15.0:
+            st.warning(
+                f"⚠️ **Phase Current Unbalance:** Neutral-side currents across A/B/C differ by "
+                f"up to **{max_dev_pct:.1f}%** from their average. Expected during a real "
+                f"unbalanced fault, but worth double-checking for a CT/wiring problem if this "
+                f"wasn't the intended test condition."
+            )
+        else:
+            st.success(f"✅ Phase Balance OK (Neutral-side currents within {max_dev_pct:.1f}% of each other)")
 
     # INTERACTIVE PLOTLY GRAPHIC
     st.subheader("📈 Dual-Slope Characteristic Trip Curve Visualization")
@@ -444,7 +597,6 @@ with tab1:
     # High-set boundary — only meaningful when this relay actually has an unrestrained
     # element. GENERATOR_LEGACY has i_unrestrained forced to 1e6 (unreachable) because
     # this hardware has no such setting, so skip drawing/scaling around it.
-    has_unrestrained_element = relay.i_unrestrained < 1e5
     if has_unrestrained_element:
         fig.add_trace(go.Scatter(
             x=[0, max_x_val], y=[relay.i_unrestrained, relay.i_unrestrained],
@@ -484,6 +636,8 @@ with tab2:
     st.subheader("🧰 Commissioning & Secondary Current Injection Assistant")
     st.write("Determine the exact test currents needed for field testing using Doble/Omicron test sets.")
 
+    n_inj_label, t_inj_label = "Neutral Side", "Terminal Side"
+
     col_test1, col_test2 = st.columns(2)
     with col_test1:
         test_restraint = st.slider("Required Target Restraint Current (pu)", 0.2, 5.0, 1.2, 0.1)
@@ -500,10 +654,80 @@ with tab2:
     st.markdown("---")
     st.write("### Target Relay Secondary Terminal Current Injection Parameters:")
 
-    n_inj_label, t_inj_label = "Neutral Side", "Terminal Side"
-
     c_sec_a, c_sec_b = st.columns(2)
     with c_sec_a:
         st.info(f"**{n_inj_label} Secondary Injection Current ($I_N$):**\n# {sec_N_injection:.3f} Amps AC")
     with c_sec_b:
         st.info(f"**{t_inj_label} Secondary Injection Current ($I_T$):**\n# {sec_T_injection:.3f} Amps AC")
+
+    # -------------------------------------------------------------
+    # AUTO-SWEEP FULL CURVE TEST TABLE
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.subheader("🔁 Auto-Sweep Full Curve Test Table")
+    st.write(
+        "Generates a full table of boundary test points across the restraint range in one go, "
+        "instead of testing one point at a time — useful for a complete commissioning verification."
+    )
+
+    sw1, sw2, sw3 = st.columns(3)
+    with sw1:
+        sweep_start = st.number_input("Sweep Start (pu)", value=0.2, min_value=0.0, step=0.1)
+    with sw2:
+        default_end = float(relay.i_unrestrained) if relay.i_unrestrained < 1e5 else 6.0
+        sweep_end = st.number_input("Sweep End (pu)", value=max(6.0, default_end), step=0.5)
+    with sw3:
+        sweep_step = st.number_input("Sweep Step (pu)", value=0.5, min_value=0.1, step=0.1)
+
+    if st.button("▶️ Generate Sweep Table"):
+        if sweep_end <= sweep_start or sweep_step <= 0:
+            st.error("Sweep End must be greater than Sweep Start, and Sweep Step must be positive.")
+        else:
+            sweep_points = np.arange(sweep_start, sweep_end + sweep_step / 2.0, sweep_step)
+            sweep_rows = []
+            for i_rest in sweep_points:
+                boundary_op = relay.calculate_trip_threshold(i_rest)
+                sec_n = (i_rest + boundary_op / 2.0) * relay.i_rated_sec_N
+                sec_t = (i_rest - boundary_op / 2.0) * relay.i_rated_sec_T
+                sweep_rows.append({
+                    "I_rest (pu)": round(float(i_rest), 3),
+                    "Boundary I_op (pu)": round(boundary_op, 3),
+                    "Neutral Injection I_N (A)": round(sec_n, 3),
+                    "Terminal Injection I_T (A)": round(sec_t, 3),
+                })
+            st.session_state["sweep_df"] = pd.DataFrame(sweep_rows)
+
+    if "sweep_df" in st.session_state:
+        st.dataframe(st.session_state["sweep_df"], use_container_width=True)
+        csv_sweep = st.session_state["sweep_df"].to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Download Sweep Table as CSV",
+            data=csv_sweep,
+            file_name=f"87G_Sweep_Test_Table_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            mime="text/csv"
+        )
+
+
+# TEST LOG & EXPORT TAB
+with tab3:
+    st.subheader("🗂️ Test Log & Shift Report Export")
+    st.write("Every test you click **📌 Log This Test** for (in the Live Vector Simulation tab) is collected here for the shift.")
+
+    if len(st.session_state.test_log) == 0:
+        st.info("No tests logged yet. Go to the 📊 Live Vector Simulation tab, run a test, and click '📌 Log This Test'.")
+    else:
+        log_df = pd.DataFrame(st.session_state.test_log)
+        st.dataframe(log_df, use_container_width=True)
+
+        csv_bytes = log_df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇️ Download Test Log as CSV",
+            data=csv_bytes,
+            file_name=f"87G_Test_Log_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
+            mime="text/csv"
+        )
+
+        st.markdown("---")
+        if st.button("🗑️ Clear Test Log"):
+            st.session_state.test_log = []
+            st.rerun()
