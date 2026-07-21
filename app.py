@@ -464,7 +464,14 @@ with tab1:
     col_inputs, col_results = st.columns([1.2, 1.0])
 
     with col_inputs:
-        st.subheader("Secondary Operating Phase Inputs")
+        st.subheader("Primary (System) Operating Phase Inputs")
+        st.caption(
+            "Enter the actual PRIMARY-side current in Amps (e.g. generator load current or "
+            "fault current at the machine terminals) — the app converts this through the CT "
+            "ratio and rated base automatically. You do not need to divide by the CT ratio "
+            "yourself. For the actual 0–5 A (or 0–1 A) secondary current you'd inject into "
+            "the physical relay during testing, see the Commissioning & Injection Tool tab."
+        )
         
         # Display derived system values
         if current_mode == "TRANSFORMER":
@@ -503,10 +510,10 @@ with tab1:
                 def_ang_T = def_ang_N + 180.0 if ct_polarity == "OPPOSITE" else def_ang_N
                 
                 with c1:
-                    i_N = st.number_input(f"{n_side_label} Amps [A]", value=def_val_N, key=f"N_i_{phase}")
+                    i_N = st.number_input(f"{n_side_label} Primary Amps [A]", value=def_val_N, key=f"N_i_{phase}")
                     a_N = st.number_input(f"{n_side_label} Angle (°)", value=def_ang_N, key=f"N_a_{phase}")
                 with c2:
-                    i_T = st.number_input(f"{t_side_label} Amps [A]", value=def_val_T, key=f"T_i_{phase}")
+                    i_T = st.number_input(f"{t_side_label} Primary Amps [A]", value=def_val_T, key=f"T_i_{phase}")
                     a_T = st.number_input(f"{t_side_label} Angle (°)", value=def_ang_T, key=f"T_a_{phase}")
                 if current_mode in ("GENERATOR", "GENERATOR_LEGACY"):
                     h2 = 0.0
