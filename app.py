@@ -401,6 +401,16 @@ with tab1:
             st.info(f"Generator Nominal Rated Current: **{relay.i_rated_pri_H:.1f} A**")
 
         phases = ["Phase A", "Phase B", "Phase C"]
+
+        # Side labels must match the actual physical meaning of N/T per equipment type —
+        # Generator: both CTs sit on the SAME winding at the same voltage (neutral end vs
+        # terminal end), so "Primary/Secondary" (a transformer voltage-ratio concept) is wrong.
+        if current_mode == "GENERATOR":
+            n_side_label, t_side_label = "Neutral Side (End 1)", "Terminal Side (End 2)"
+        elif current_mode == "TRANSFORMER":
+            n_side_label, t_side_label = "Primary (HV)", "Secondary (LV)"
+        else:  # LINE
+            n_side_label, t_side_label = "Local (End 1)", "Remote (End 2)"
         inputs = {}
 
         # Capture Phase inputs in tabs/expanders
@@ -419,11 +429,11 @@ with tab1:
                 def_ang_T = def_ang_N + 180.0 if ct_polarity == "OPPOSITE" else def_ang_N
                 
                 with c1:
-                    i_N = st.number_input(f"End 1 / Primary Amps [A]", value=def_val_N, key=f"N_i_{phase}")
-                    a_N = st.number_input(f"End 1 Angle (°)", value=def_ang_N, key=f"N_a_{phase}")
+                    i_N = st.number_input(f"{n_side_label} Amps [A]", value=def_val_N, key=f"N_i_{phase}")
+                    a_N = st.number_input(f"{n_side_label} Angle (°)", value=def_ang_N, key=f"N_a_{phase}")
                 with c2:
-                    i_T = st.number_input(f"End 2 / Secondary Amps [A]", value=def_val_T, key=f"T_i_{phase}")
-                    a_T = st.number_input(f"End 2 Angle (°)", value=def_ang_T, key=f"T_a_{phase}")
+                    i_T = st.number_input(f"{t_side_label} Amps [A]", value=def_val_T, key=f"T_i_{phase}")
+                    a_T = st.number_input(f"{t_side_label} Angle (°)", value=def_ang_T, key=f"T_a_{phase}")
                 if current_mode == "GENERATOR":
                     h2 = 0.0
                     h5 = 0.0
@@ -542,8 +552,15 @@ with tab2:
     st.markdown("---")
     st.write("### Target Relay Secondary Terminal Current Injection Parameters:")
 
+    if current_mode == "GENERATOR":
+        n_inj_label, t_inj_label = "Neutral Side", "Terminal Side"
+    elif current_mode == "TRANSFORMER":
+        n_inj_label, t_inj_label = "Primary Winding", "Secondary Winding"
+    else:
+        n_inj_label, t_inj_label = "Local (End 1)", "Remote (End 2)"
+
     c_sec_a, c_sec_b = st.columns(2)
     with c_sec_a:
-        st.info(f"**Primary Winding / Neutral Side Secondary Injection Current ($I_N$):**\n# {sec_N_injection:.3f} Amps AC")
+        st.info(f"**{n_inj_label} Secondary Injection Current ($I_N$):**\n# {sec_N_injection:.3f} Amps AC")
     with c_sec_b:
-        st.info(f"**Secondary Winding / Terminal Side Secondary Injection Current ($I_T$):**\n# {sec_T_injection:.3f} Amps AC")
+        st.info(f"**{t_inj_label} Secondary Injection Current ($I_T$):**\n# {sec_T_injection:.3f} Amps AC")
