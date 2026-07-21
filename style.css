@@ -34,7 +34,7 @@
     position:fixed; inset:0; z-index:-2;
     background-size:cover; background-position:center;
     opacity:0; transition: opacity 1.4s ease;
-    filter: saturate(0.75) brightness(0.8);
+    filter: saturate(0.9) brightness(1.05);
   }
   .life-bg.is-active{ opacity:1; }
   .life-bg-overlay{
@@ -42,7 +42,7 @@
     background:
       radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,125,216,0.12), transparent 60%),
       radial-gradient(ellipse 700px 500px at 100% 20%, rgba(61,125,216,0.08), transparent 60%),
-      linear-gradient(180deg, rgba(10,22,40,0.86), rgba(10,22,40,0.93)),
+      linear-gradient(180deg, rgba(10,22,40,0.68), rgba(10,22,40,0.76)),
       linear-gradient(var(--paper-line) 1px, transparent 1px),
       linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
     background-size: auto, auto, auto, 56px 56px, 56px 56px;
