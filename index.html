@@ -4,6 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Hirzi — Electrical &amp; Protection Engineer</title>
+<meta name="description" content="Portfolio of Hirzi Fakhru Dzaki Hidayat — penultimate-year MEng Electrical & Electronic Engineering student, currently interning in protection relays and DCS systems at a 615 MW coal-fired power plant in East Java." />
+<meta property="og:title" content="Hirzi — Electrical & Protection Engineer" />
+<meta property="og:description" content="Power systems, protection, and control — from coursework projects to a live coal-fired plant internship." />
+<meta property="og:type" content="website" />
+<!-- Add a favicon.ico (or favicon.svg) to your repo root and uncomment the line below -->
+<!-- <link rel="icon" href="favicon.ico"> -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,14 +19,36 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="progress-bar" id="progressBar"></div>
 
+<!-- 
+  LIFE BACKDROP — five fixed, full-page photos that crossfade as you scroll,
+  giving a "taste of life" feel throughout the site instead of one static banner.
+  life-bg-1: GIS switchgear yard        -> About, Experience
+  life-bg-2: looking up at plant structure -> Education, Skills
+  life-bg-3: futsal team with the trophy   -> Organizations, Sports
+  life-bg-4: transformer/plant yard        -> Projects
+  life-bg-5: jersey + medals + trophy flat-lay -> Contact
+  They're darkened a lot on purpose — meant to be felt as atmosphere, not read
+  as a photo.
+-->
+<div class="life-bg is-active" data-sections="about,experience" style="background-image:url('life-bg-1.jpg');"></div>
+<div class="life-bg" data-sections="education,skills" style="background-image:url('life-bg-2.jpg');"></div>
+<div class="life-bg" data-sections="organizations,sports" style="background-image:url('life-bg-3.jpg');"></div>
+<div class="life-bg" data-sections="projects" style="background-image:url('life-bg-4.jpg');"></div>
+<div class="life-bg" data-sections="contact" style="background-image:url('life-bg-5.jpg');"></div>
+<div class="life-bg-overlay"></div>
+
 <nav class="nav" aria-label="Primary">
   <div class="wrap">
-    <span class="brand">Personal Portofolio // EEE Student </span>
-    <ul>
+    <span class="brand">Hirzi Hidayat // EEE Student</span>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul id="navList">
       <li><a href="#about"><span class="status-dot"></span><span class="label">About</span></a></li>
       <li><a href="#experience"><span class="status-dot"></span><span class="label">Experience</span></a></li>
       <li><a href="#projects"><span class="status-dot"></span><span class="label">Projects</span></a></li>
       <li><a href="#education"><span class="status-dot"></span><span class="label">Education</span></a></li>
+      <li><a href="#skills"><span class="status-dot"></span><span class="label">Skills</span></a></li>
       <li><a href="#organizations"><span class="status-dot"></span><span class="label">Organizations</span></a></li>
       <li><a href="#sports"><span class="status-dot"></span><span class="label">Sports</span></a></li>
       <li><a href="#contact"><span class="status-dot"></span><span class="label">Contact</span></a></li>
@@ -36,7 +64,7 @@
     <p class="tagline">Penultimate year MEng (Hons) Electrical and Electronic Engineering student at the University of Nottingham Malaysia, currently inside a 615 MW coal-fired plant in East Java learning how generators, transformers, and switchgear actually work.</p>
 
     <div class="sld" aria-hidden="false">
-      <svg viewBox="0 0 1100 200" role="img" aria-label="Single-line diagram used as site navigation: Generator, Breaker, Bus, feeding seven labeled sections. The breaker is clickable to toggle current flow.">
+      <svg viewBox="0 0 1100 200" role="img" aria-label="Single-line diagram used as site navigation: Generator, Breaker, Bus, feeding eight labeled sections. The breaker is clickable to toggle current flow.">
         <!-- Generator -->
         <circle class="sld-node-circle" cx="70" cy="60" r="26"/>
         <text x="70" y="66" class="sld-label" style="font-weight:600;">G</text>
@@ -59,42 +87,46 @@
         <line class="sld-bus power-line current-flow" x1="250" y1="26" x2="1060" y2="26"/>
         <text x="250" y="14" class="sld-caption" text-anchor="start">BUS</text>
 
-       <!-- Feeders -->
-        <!-- positions evenly spaced along bus (x=250 to x=1060) for 7 feeders -->
+       <!-- Feeders — order matches the actual page/section order (About -> Contact) -->
         <g class="feeder-group" data-target="#about" tabindex="0" role="link" aria-label="Go to About section">
-          <line class="sld-line" x1="351" y1="26" x2="351" y2="150"/>
-          <line class="sld-line" x1="337" y1="150" x2="365" y2="150" transform="rotate(-30 351 150)"/>
-          <text x="351" y="178" class="sld-label">ABOUT</text>
+          <line class="sld-line" x1="340" y1="26" x2="340" y2="150"/>
+          <line class="sld-line" x1="326" y1="150" x2="354" y2="150" transform="rotate(-30 340 150)"/>
+          <text x="340" y="178" class="sld-label">ABOUT</text>
         </g>
         <g class="feeder-group" data-target="#experience" tabindex="0" role="link" aria-label="Go to Experience section">
-          <line class="sld-line" x1="453" y1="26" x2="453" y2="150"/>
-          <line class="sld-line" x1="439" y1="150" x2="467" y2="150" transform="rotate(-30 453 150)"/>
-          <text x="453" y="178" class="sld-label">EXPERIENCE</text>
+          <line class="sld-line" x1="430" y1="26" x2="430" y2="150"/>
+          <line class="sld-line" x1="416" y1="150" x2="444" y2="150" transform="rotate(-30 430 150)"/>
+          <text x="430" y="178" class="sld-label">EXPERIENCE</text>
         </g>
         <g class="feeder-group" data-target="#projects" tabindex="0" role="link" aria-label="Go to Projects section">
-          <line class="sld-line" x1="554" y1="26" x2="554" y2="150"/>
-          <line class="sld-line" x1="540" y1="150" x2="568" y2="150" transform="rotate(-30 554 150)"/>
-          <text x="554" y="178" class="sld-label">PROJECTS</text>
+          <line class="sld-line" x1="520" y1="26" x2="520" y2="150"/>
+          <line class="sld-line" x1="506" y1="150" x2="534" y2="150" transform="rotate(-30 520 150)"/>
+          <text x="520" y="178" class="sld-label">PROJECTS</text>
         </g>
         <g class="feeder-group" data-target="#education" tabindex="0" role="link" aria-label="Go to Education section">
-          <line class="sld-line" x1="655" y1="26" x2="655" y2="150"/>
-          <line class="sld-line" x1="641" y1="150" x2="669" y2="150" transform="rotate(-30 655 150)"/>
-          <text x="655" y="178" class="sld-label">EDUCATION</text>
+          <line class="sld-line" x1="610" y1="26" x2="610" y2="150"/>
+          <line class="sld-line" x1="596" y1="150" x2="624" y2="150" transform="rotate(-30 610 150)"/>
+          <text x="610" y="178" class="sld-label">EDUCATION</text>
         </g>
-        <g class="feeder-group" data-target="#sports" tabindex="0" role="link" aria-label="Go to Sports section">
-          <line class="sld-line" x1="756" y1="26" x2="756" y2="150"/>
-          <line class="sld-line" x1="742" y1="150" x2="770" y2="150" transform="rotate(-30 756 150)"/>
-          <text x="756" y="178" class="sld-label">SPORTS</text>
+        <g class="feeder-group" data-target="#skills" tabindex="0" role="link" aria-label="Go to Skills section">
+          <line class="sld-line" x1="700" y1="26" x2="700" y2="150"/>
+          <line class="sld-line" x1="686" y1="150" x2="714" y2="150" transform="rotate(-30 700 150)"/>
+          <text x="700" y="178" class="sld-label">SKILLS</text>
         </g>
         <g class="feeder-group" data-target="#organizations" tabindex="0" role="link" aria-label="Go to Organizations section">
-          <line class="sld-line" x1="858" y1="26" x2="858" y2="150"/>
-          <line class="sld-line" x1="844" y1="150" x2="872" y2="150" transform="rotate(-30 858 150)"/>
-          <text x="858" y="178" class="sld-label">ORGANIZATIONS</text>
+          <line class="sld-line" x1="790" y1="26" x2="790" y2="150"/>
+          <line class="sld-line" x1="776" y1="150" x2="804" y2="150" transform="rotate(-30 790 150)"/>
+          <text x="790" y="178" class="sld-label">ORGANIZATIONS</text>
+        </g>
+        <g class="feeder-group" data-target="#sports" tabindex="0" role="link" aria-label="Go to Sports section">
+          <line class="sld-line" x1="880" y1="26" x2="880" y2="150"/>
+          <line class="sld-line" x1="866" y1="150" x2="894" y2="150" transform="rotate(-30 880 150)"/>
+          <text x="880" y="178" class="sld-label">SPORTS</text>
         </g>
         <g class="feeder-group" data-target="#contact" tabindex="0" role="link" aria-label="Go to Contact section">
-          <line class="sld-line" x1="959" y1="26" x2="959" y2="150"/>
-          <line class="sld-line" x1="945" y1="150" x2="973" y2="150" transform="rotate(-30 959 150)"/>
-          <text x="959" y="178" class="sld-label">CONTACT</text>
+          <line class="sld-line" x1="970" y1="26" x2="970" y2="150"/>
+          <line class="sld-line" x1="956" y1="150" x2="984" y2="150" transform="rotate(-30 970 150)"/>
+          <text x="970" y="178" class="sld-label">CONTACT</text>
         </g>
       </svg>
     </div>
@@ -155,9 +187,9 @@
         <div class="project-card reveal">
           <span class="num">1</span>
           <h3>Isolated Two Switch Forward Converter</h3>
-          <img src ="forward-converter-pcb.jpg" alt="Forward Converter PCB" style="width:100%; border-radius:6px; margin-top:8px;"/>
-          <img src ="control-circuit-pcb.jpg" alt="Control Circuit PCB" style="width:100%; border-radius:6px; margin-top:8px;"/>
-          <img src ="closed-loop.jpg" alt="Closed Loop Control" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="forward-converter-pcb.jpg" alt="Forward Converter PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="control-circuit-pcb.jpg" alt="Control Circuit PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="closed-loop.jpg" alt="Closed Loop Control" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
           <p>Designed and built a prototype of a closed-loop isolated two switch forward converter as part of a Energy Design Group Project.</p>
           <div class="project-tags"><span class="tag-sm">Power Electronics</span><span class="tag-sm">Control Circuit</span></div>
       </div>
@@ -197,9 +229,27 @@
     </div>
   </section>
 
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">05</span><h2>Skills</h2></div>
+      <!-- Pulled from what's already on the page — add/remove to match your real toolset (e.g. MATLAB/Simulink, AutoCAD Electrical, ETAP, PSCAD) -->
+      <div class="module-cloud">
+        <span class="module-pill">Protection Relays (GE 469 / 869 / 350 / T60)</span>
+        <span class="module-pill">DCS: Emerson Ovation</span>
+        <span class="module-pill">Mark VIe vE</span>
+        <span class="module-pill">FSSS — Allen-Bradley</span>
+        <span class="module-pill">Single-Line Diagram Reading &amp; Drafting</span>
+        <span class="module-pill">Switchgear &amp; Transformers</span>
+        <span class="module-pill">Power Electronics &amp; Control Circuit Design</span>
+        <span class="module-pill">Embedded Systems: STM32 &amp; CPLD</span>
+        <span class="module-pill">Solar PV System Sizing</span>
+      </div>
+    </div>
+  </section>
+
   <section id="organizations">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">05</span><h2>Organizations</h2></div>
+      <div class="section-head"><span class="section-tag">06</span><h2>Organizations</h2></div>
       <div class="org-grid">  
         <div class="org-card reveal">
           <span class="num">1</span>
@@ -213,10 +263,10 @@
       
   <section id="sports">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">06</span><h2>Sports &amp; Recreation</h2></div>
+      <div class="section-head"><span class="section-tag">07</span><h2>Sports &amp; Recreation</h2></div>
       <p class="sports-desc">Beyond engineering, I'm passionate about staying active and competitive. Sports have shaped my discipline and resilience — qualities that translate directly into technical problem-solving.</p>
       <div class="sport-grid">
-        <div class="sport-card reveal"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Actively competed in many sports events including prestigous SOP (Schools of Olympics) Qatar.</div></div>
+        <div class="sport-card reveal"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Actively competed in many sports events including the prestigious SOP (Schools of Olympics) Qatar.</div></div>
         <div class="sport-card reveal"><div class="name">Futsal</div><div class="level">Competitive</div><div class="description">Represented university in national league for Higher Institutions.</div></div>
         <div class="sport-card reveal"><div class="name">Swimming</div><div class="level">Recreational</div><div class="description">Endurance training and a way to maintain fitness balance alongside demanding coursework.</div></div>
         <div class="sport-card reveal"><div class="name">Gym Training</div><div class="level">Regular</div><div class="description">Strength and conditioning to maintain physical resilience for long technical problem-solving sessions.</div></div>
@@ -226,11 +276,13 @@
 
   <footer id="contact">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">07</span><h2>Contact</h2></div>
+      <div class="section-head"><span class="section-tag">08</span><h2>Contact</h2></div>
       <p style="color:var(--ink-soft); max-width:50ch;">Open to conversations about internships, protection engineering, or the Gulf EPC path — reach out any time.</p>
       <div class="contact-row">
         <a href="mailto:hirzi.fdh@gmail.com">hirzi.fdh@gmail.com</a>
         <a href="https://www.linkedin.com/in/hirzi-hidayat-ba8a9b202/">LinkedIn ↗</a>
+        <!-- Add your GitHub username below -->
+        <a href="https://github.com/YOUR-USERNAME">GitHub ↗</a>
       </div>
     </div>
   </footer>
@@ -269,18 +321,27 @@
   }, { threshold: 0.15 });
   document.querySelectorAll('.reveal').forEach(function(el){ revealObserver.observe(el); });
 
-  // ---- Active section highlighting in nav ----
+  // ---- Active section highlighting in nav + life-bg photo crossfade ----
   var navLinks = {};
   document.querySelectorAll('.nav a[href^="#"]').forEach(function(a){
     navLinks[a.getAttribute('href').slice(1)] = a;
   });
+  var lifeBgs = document.querySelectorAll('.life-bg');
+  function setActiveBg(sectionId){
+    lifeBgs.forEach(function(bg){
+      var sections = (bg.getAttribute('data-sections') || '').split(',');
+      bg.classList.toggle('is-active', sections.indexOf(sectionId) !== -1);
+    });
+  }
   var sectionObserver = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       var id = entry.target.id;
-      if(!navLinks[id]) return;
       if(entry.isIntersecting){
-        Object.keys(navLinks).forEach(function(key){ navLinks[key].classList.remove('active'); });
-        navLinks[id].classList.add('active');
+        if(navLinks[id]){
+          Object.keys(navLinks).forEach(function(key){ navLinks[key].classList.remove('active'); });
+          navLinks[id].classList.add('active');
+        }
+        setActiveBg(id);
       }
     });
   }, { threshold: 0.35, rootMargin: '-56px 0px -35% 0px' });
@@ -289,8 +350,6 @@
   });
 
   // ---- GCB breaker toggle: click/tap or Enter/Space to open or close ----
-  // Opening the breaker visually stops the "current flow" animation on the
-  // generator -> bus lines; closing it resumes the flow.
   var gcbToggle = document.querySelector('.gcb-toggle');
   function toggleBreaker(){
     var isOpenNow = gcbToggle.getAttribute('data-state') === 'open';
@@ -311,6 +370,23 @@
     gcbToggle.addEventListener('click', toggleBreaker);
     gcbToggle.addEventListener('keydown', function(e){
       if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleBreaker(); }
+    });
+  }
+
+  // ---- Mobile nav toggle ----
+  var navToggle = document.getElementById('navToggle');
+  var navList = document.getElementById('navList');
+  if(navToggle && navList){
+    navToggle.addEventListener('click', function(){
+      var isOpen = navList.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    // close menu after picking a link (mobile)
+    navList.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){
+        navList.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
     });
   }
 </script>
