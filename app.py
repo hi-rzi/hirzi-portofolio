@@ -573,7 +573,7 @@ with tab1:
 
 
     # INTERACTIVE PLOTLY GRAPHIC
-    st.subheader("📈 Restraint Characteristic Trip Curve Visualization")
+    st.subheader("📈 Differential Slope Characteristic Curve")
 
     chart_units = st.radio(
         "Chart units", ["Per-Unit (pu)", "Secondary Amps (A)"], horizontal=True,
@@ -632,7 +632,7 @@ with tab1:
     y_upper = y_upper_pu * amps_base if use_amps else y_upper_pu
     x_upper = max_x_val * amps_base if use_amps else max_x_val
     fig.update_layout(
-        title=f"{'GE G60 Dual-Breakpoint' if relay.mode == 'GENERATOR' else 'Single-Slope'} Restraint Plot ({relay.mode})",
+        title="Differential Slope Characteristic Curve",
         xaxis_title=f"Restraint Current I_rest ({unit_label})",
         yaxis_title=f"Differential/Operating Current I_op ({unit_label})",
         xaxis=dict(range=[0, x_upper]),
@@ -642,6 +642,10 @@ with tab1:
     )
 
     st.plotly_chart(fig, use_container_width=True)
+    st.caption(
+        f"Curve shape: {'GE G60 dual-breakpoint' if relay.mode == 'GENERATOR' else 'CFD22B4A single-slope'} "
+        f"characteristic ({relay.mode})."
+    )
 
 
 # SECONDARY TESTING INJECTION WORKBENCH
