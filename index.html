@@ -23,19 +23,18 @@
   LIFE BACKDROP — five fixed, full-page photos that crossfade as you scroll,
   giving a "taste of life" feel throughout the site instead of one static banner.
   life-bg-1: GIS switchgear yard        -> About, Experience
-  life-bg-2: looking up at plant structure -> Education, Skills
+  life-bg-2: looking up at plant structure -> Education, Skills, Certifications
   life-bg-3: futsal team with the trophy   -> Organizations, Sports
   life-bg-4: transformer/plant yard        -> Projects
   life-bg-5: jersey + medals + trophy flat-lay -> Contact
   They're darkened a lot on purpose — meant to be felt as atmosphere, not read
   as a photo.
 -->
-<div class="life-bg is-active" data-sections="about,experience" style="background-image:url('life-bg-1.jpeg');"></div>
-<div class="life-bg" data-sections="education,skills" style="background-image:url('life-bg-2.jpeg');"></div>
-<div class="life-bg" data-sections="organizations" style="background-image:url('life-bg-3.jpeg');"></div>
-  <div class="life-bg" data-sections="sports" style="background-image:url('life-bg-5.jpeg');"></div>
-<div class="life-bg" data-sections="projects" style="background-image:url('life-bg-4.jpeg');"></div>
-<div class="life-bg" data-sections="contact" style="background-image:url('life-bg-5.jpeg');"></div>
+<div class="life-bg is-active" data-sections="about,experience" style="background-image:url('life-bg-1.jpg');"></div>
+<div class="life-bg" data-sections="education,skills,certifications" style="background-image:url('life-bg-2.jpg');"></div>
+<div class="life-bg" data-sections="organizations,sports" style="background-image:url('life-bg-3.jpg');"></div>
+<div class="life-bg" data-sections="projects" style="background-image:url('life-bg-4.jpg');"></div>
+<div class="life-bg" data-sections="contact" style="background-image:url('life-bg-5.jpg');"></div>
 <div class="life-bg-overlay"></div>
 
 <nav class="nav" aria-label="Primary">
@@ -50,6 +49,7 @@
       <li><a href="#projects"><span class="status-dot"></span><span class="label">Projects</span></a></li>
       <li><a href="#education"><span class="status-dot"></span><span class="label">Education</span></a></li>
       <li><a href="#skills"><span class="status-dot"></span><span class="label">Skills</span></a></li>
+      <li><a href="#certifications"><span class="status-dot"></span><span class="label">Certifications</span></a></li>
       <li><a href="#organizations"><span class="status-dot"></span><span class="label">Organizations</span></a></li>
       <li><a href="#sports"><span class="status-dot"></span><span class="label">Sports</span></a></li>
       <li><a href="#contact"><span class="status-dot"></span><span class="label">Contact</span></a></li>
@@ -62,10 +62,10 @@
   <header class="hero wrap">
     <p class="eyebrow">Electrical &amp; Electronic Engineering Student </p>
     <h1>Hirzi Fakhru Dzaki Hidayat</h1>
-    <p class="tagline">2nd year MEng (Hons) Electrical and Electronic Engineering student at the University of Nottingham Malaysia, currently inside a 2x615 MW coal-fired plant in East Java learning how generators, transformers, and switchgear actually work.</p>
+    <p class="tagline">Penultimate year MEng (Hons) Electrical and Electronic Engineering student at the University of Nottingham Malaysia, currently inside a 615 MW coal-fired plant in East Java learning how generators, transformers, and switchgear actually work.</p>
 
     <div class="sld" aria-hidden="false">
-      <svg viewBox="0 0 1100 200" role="img" aria-label="Single-line diagram used as site navigation: Generator, Breaker, Bus, feeding eight labeled sections. The breaker is clickable to toggle current flow.">
+      <svg viewBox="0 0 1100 200" role="img" aria-label="Single-line diagram used as site navigation: Generator, Breaker, Bus, feeding nine labeled sections. The breaker is clickable to toggle current flow.">
         <!-- Generator -->
         <circle class="sld-node-circle" cx="70" cy="60" r="26"/>
         <text x="70" y="66" class="sld-label" style="font-weight:600;">G</text>
@@ -90,44 +90,49 @@
 
        <!-- Feeders — order matches the actual page/section order (About -> Contact) -->
         <g class="feeder-group" data-target="#about" tabindex="0" role="link" aria-label="Go to About section">
-          <line class="sld-line" x1="340" y1="26" x2="340" y2="150"/>
-          <line class="sld-line" x1="326" y1="150" x2="354" y2="150" transform="rotate(-30 340 150)"/>
-          <text x="340" y="178" class="sld-label">ABOUT</text>
+          <line class="sld-line" x1="331" y1="26" x2="331" y2="150"/>
+          <line class="sld-line" x1="317" y1="150" x2="345" y2="150" transform="rotate(-30 331 150)"/>
+          <text x="331" y="178" class="sld-label">ABOUT</text>
         </g>
         <g class="feeder-group" data-target="#experience" tabindex="0" role="link" aria-label="Go to Experience section">
-          <line class="sld-line" x1="430" y1="26" x2="430" y2="150"/>
-          <line class="sld-line" x1="416" y1="150" x2="444" y2="150" transform="rotate(-30 430 150)"/>
-          <text x="430" y="178" class="sld-label">EXPERIENCE</text>
+          <line class="sld-line" x1="412" y1="26" x2="412" y2="150"/>
+          <line class="sld-line" x1="398" y1="150" x2="426" y2="150" transform="rotate(-30 412 150)"/>
+          <text x="412" y="178" class="sld-label">EXPERIENCE</text>
         </g>
         <g class="feeder-group" data-target="#projects" tabindex="0" role="link" aria-label="Go to Projects section">
-          <line class="sld-line" x1="520" y1="26" x2="520" y2="150"/>
-          <line class="sld-line" x1="506" y1="150" x2="534" y2="150" transform="rotate(-30 520 150)"/>
-          <text x="520" y="178" class="sld-label">PROJECTS</text>
+          <line class="sld-line" x1="493" y1="26" x2="493" y2="150"/>
+          <line class="sld-line" x1="479" y1="150" x2="507" y2="150" transform="rotate(-30 493 150)"/>
+          <text x="493" y="178" class="sld-label">PROJECTS</text>
         </g>
         <g class="feeder-group" data-target="#education" tabindex="0" role="link" aria-label="Go to Education section">
-          <line class="sld-line" x1="610" y1="26" x2="610" y2="150"/>
-          <line class="sld-line" x1="596" y1="150" x2="624" y2="150" transform="rotate(-30 610 150)"/>
-          <text x="610" y="178" class="sld-label">EDUCATION</text>
+          <line class="sld-line" x1="574" y1="26" x2="574" y2="150"/>
+          <line class="sld-line" x1="560" y1="150" x2="588" y2="150" transform="rotate(-30 574 150)"/>
+          <text x="574" y="178" class="sld-label">EDUCATION</text>
         </g>
         <g class="feeder-group" data-target="#skills" tabindex="0" role="link" aria-label="Go to Skills section">
-          <line class="sld-line" x1="700" y1="26" x2="700" y2="150"/>
-          <line class="sld-line" x1="686" y1="150" x2="714" y2="150" transform="rotate(-30 700 150)"/>
-          <text x="700" y="178" class="sld-label">SKILLS</text>
+          <line class="sld-line" x1="655" y1="26" x2="655" y2="150"/>
+          <line class="sld-line" x1="641" y1="150" x2="669" y2="150" transform="rotate(-30 655 150)"/>
+          <text x="655" y="178" class="sld-label">SKILLS</text>
+        </g>
+        <g class="feeder-group" data-target="#certifications" tabindex="0" role="link" aria-label="Go to Certifications section">
+          <line class="sld-line" x1="736" y1="26" x2="736" y2="150"/>
+          <line class="sld-line" x1="722" y1="150" x2="750" y2="150" transform="rotate(-30 736 150)"/>
+          <text x="736" y="178" class="sld-label">CERTIFICATIONS</text>
         </g>
         <g class="feeder-group" data-target="#organizations" tabindex="0" role="link" aria-label="Go to Organizations section">
-          <line class="sld-line" x1="790" y1="26" x2="790" y2="150"/>
-          <line class="sld-line" x1="776" y1="150" x2="804" y2="150" transform="rotate(-30 790 150)"/>
-          <text x="790" y="178" class="sld-label">ORGANIZATIONS</text>
+          <line class="sld-line" x1="817" y1="26" x2="817" y2="150"/>
+          <line class="sld-line" x1="803" y1="150" x2="831" y2="150" transform="rotate(-30 817 150)"/>
+          <text x="817" y="178" class="sld-label">ORGANIZATIONS</text>
         </g>
         <g class="feeder-group" data-target="#sports" tabindex="0" role="link" aria-label="Go to Sports section">
-          <line class="sld-line" x1="880" y1="26" x2="880" y2="150"/>
-          <line class="sld-line" x1="866" y1="150" x2="894" y2="150" transform="rotate(-30 880 150)"/>
-          <text x="880" y="178" class="sld-label">SPORTS</text>
+          <line class="sld-line" x1="898" y1="26" x2="898" y2="150"/>
+          <line class="sld-line" x1="884" y1="150" x2="912" y2="150" transform="rotate(-30 898 150)"/>
+          <text x="898" y="178" class="sld-label">SPORTS</text>
         </g>
         <g class="feeder-group" data-target="#contact" tabindex="0" role="link" aria-label="Go to Contact section">
-          <line class="sld-line" x1="970" y1="26" x2="970" y2="150"/>
-          <line class="sld-line" x1="956" y1="150" x2="984" y2="150" transform="rotate(-30 970 150)"/>
-          <text x="970" y="178" class="sld-label">CONTACT</text>
+          <line class="sld-line" x1="979" y1="26" x2="979" y2="150"/>
+          <line class="sld-line" x1="965" y1="150" x2="993" y2="150" transform="rotate(-30 979 150)"/>
+          <text x="979" y="178" class="sld-label">CONTACT</text>
         </g>
       </svg>
     </div>
@@ -146,7 +151,7 @@
           <dt>Location</dt><dd>Probolinggo, ID. Semenyih, MY. Al Khor, QA</dd>
           <dt>Base</dt><dd>Qatar</dd>
           <dt>Institution</dt><dd>University of Nottingham Malaysia</dd>
-          <dt>Programme</dt><dd>MEng Electrical &amp; Electronic Engineering</dd>
+          <dt>Programme</dt><dd>MEng Electrical &amp; Electronic Eng.</dd>
           <dt>Focus</dt><dd>Power Systems · Protection · Control</dd>
         </dl>
       </div>
@@ -159,28 +164,26 @@
       <div class="exp-grid">
         <div class="exp-card reveal">
           <span class="num">1</span>
-          <h2>Internship</h2>
-          <h3>POMI — Paiton Operations &amp; Maintenance Indonesia</h3>
-          <p>June 2026 – August 2026</p>
-          <p>Throughout my internship in POMI, I have learned about protection and power systems of electrical equipments (Generators, Transformers, Motors, Switchgears, etc.)</p>
-          <p>Currently working on a project to develop a Generator Differential (87G) Protection Relay software for plant engineeers.</p>
+          <h3>Internship</h3>
+          <p>POMI — Paiton Operations &amp; Maintenance Indonesia</p>
+          <p>June 2026 – Present</p>
+          <p>Throughout my internship in POMI, I have learned about relay platforms and DCS systems spanning both motor management and transformer/feeder protection — building technical presentations and working with cutting-edge power systems.</p>
 
           <div class="exp-subhead">Protection Relays Worked With</div>
           <div class="relay-row">
-            <div class="relay-card reveal"><div class="model">GE G60</div><div class="role">Generator Protection</div></div>
             <div class="relay-card reveal"><div class="model">GE 469</div><div class="role">Motor Management (legacy)</div></div>
             <div class="relay-card reveal"><div class="model">GE 869</div><div class="role">Motor Management (current)</div></div>
             <div class="relay-card reveal"><div class="model">GE 350</div><div class="role">Feeder Protection</div></div>
             <div class="relay-card reveal"><div class="model">GE T60</div><div class="role">Transformer Protection</div></div>
           </div>
 
-          <div class="exp-subhead">Skills Gained From Internship</div>
+          <div class="exp-subhead">DCS &amp; Systems</div>
           <div class="dcs-row">
-            <span class="pill">AutoCAD Electrical</span>
-            <span class="pill">Visual Studio Code</span>
-            <span class="pill">Presentation</span>
-            <span class="pill">Communication</span>
-            <span class="pill">Excel</span>
+            <span class="pill">Emerson Ovation (master DCS)</span>
+            <span class="pill">Mark VIe vE</span>
+            <span class="pill">FSSS — Allen-Bradley</span>
+            <span class="pill">Single-Line Diagrams</span>
+            <span class="pill">Switchgear &amp; Transformers</span>
           </div>
         </div>
       </div>
@@ -193,27 +196,25 @@
       <div class="project-grid">  
         <div class="project-card reveal">
           <span class="num">1</span>
-          <h3>Isolated Two Switch Forward Converter - University Project</h3>
+          <h3>Isolated Two Switch Forward Converter</h3>
           <img src="forward-converter-pcb.jpg" alt="Forward Converter PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
           <img src="control-circuit-pcb.jpg" alt="Control Circuit PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
           <img src="closed-loop.jpg" alt="Closed Loop Control" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
-          <p>Co-Designed and built a prototype of a closed-loop isolated two switch forward converter as part of Energy Conditioning Design Group Project.</p>
+          <p>Designed and built a prototype of a closed-loop isolated two switch forward converter as part of a Energy Design Group Project.</p>
           <div class="project-tags"><span class="tag-sm">Power Electronics</span><span class="tag-sm">Control Circuit</span></div>
       </div>
         <div class="project-card reveal">
           <span class="num">2</span>
-          <h3>Grid-Connected PV System Design - University Coursework</h3>
+          <h3>Grid-Connected PV System Design</h3>
           <img src="pv-system-cover.png" alt="Cover page of the Grid-Connected Photovoltaic Power System design report" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
           <p>Sized and reported a PV system using ENERGYEA EA300P modules and a DEYE SUN-20K-G04 inverter as part of a group coursework project.</p>
-          <p>Used MATLAB to verify calculations of PV size and design.</p>
-          <div class="project-tags"><span class="tag-sm">Solar PV</span><span class="tag-sm">System Design</span><span class="tag-sm">MATLAB</span></div> 
+          <div class="project-tags"><span class="tag-sm">Solar PV</span><span class="tag-sm">System Design</span></div>
         </div>
         <div class="project-card reveal">
           <span class="num">3</span>
-          <h3>Doppler Radar Speed Detection - University Project</h3>
+          <h3>Doppler Radar Speed Detection</h3>
           <img src="doppler-radar-breadboard.jpg" alt="Doppler radar breadboard circuit with 7-segment display" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
           <img src="doppler-radar-display.jpg" alt="LCD keypad shield showing measured FFT frequency and speed" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
-          <p>Co-Designed and Built a prototype of a Doppler Radar Speed Detector as part of Electronic Systems Design Group Project.</p>
           <p>Embedded system on an STM32 (comparator and ADC/FFT methods) communicating via RS485 to a Xilinx CoolRunner-II CPLD driving a 7-segment display.</p>
           <div class="project-tags"><span class="tag-sm">STM32</span><span class="tag-sm">CPLD</span><span class="tag-sm">Embedded Systems</span></div>
         </div>        
@@ -256,14 +257,17 @@
       <div class="section-head"><span class="section-tag">05</span><h2>Skills</h2></div>
       <div class="skill-grid">
         <div class="skill-card reveal">
+          <span class="skill-tag">PROT // 01</span>
           <h3>Protection &amp; Plant Systems</h3>
           <ul class="skill-list">
-            <li>Protection Relays — GE G60 / 469 / 869 / 350 / T60</li>
+            <li>Protection Relays — GE 469 / 869 / 350 / T60</li>
+            <li>DCS — Emerson Ovation, Mark VIe vE, FSSS (Allen-Bradley)</li>
             <li>Single-Line Diagram Reading &amp; Drafting</li>
             <li>Switchgear &amp; Transformers</li>
           </ul>
         </div>
         <div class="skill-card reveal">
+          <span class="skill-tag">SIM // 02</span>
           <h3>Simulation &amp; Analysis</h3>
           <ul class="skill-list">
             <li>LTspice</li>
@@ -273,12 +277,14 @@
           </ul>
         </div>
         <div class="skill-card reveal">
+          <span class="skill-tag">PCB // 03</span>
           <h3>PCB Design</h3>
           <ul class="skill-list">
             <li>KiCAD</li>
           </ul>
         </div>
         <div class="skill-card reveal">
+          <span class="skill-tag">PRG // 04</span>
           <h3>Programming</h3>
           <ul class="skill-list">
             <li>C</li>
@@ -288,6 +294,7 @@
           </ul>
         </div>
         <div class="skill-card reveal">
+          <span class="skill-tag">MCU // 05</span>
           <h3>Microcontrollers &amp; Embedded</h3>
           <ul class="skill-list">
             <li>Arduino</li>
@@ -297,6 +304,7 @@
           </ul>
         </div>
         <div class="skill-card reveal">
+          <span class="skill-tag">DRW // 06</span>
           <h3>Drawings &amp; Design</h3>
           <ul class="skill-list">
             <li>AutoCAD Electrical</li>
@@ -307,11 +315,28 @@
     </div>
   </section>
 
+  <section id="certifications">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">06</span><h2>Certifications</h2></div>
+      <div class="cert-grid">
+        <div class="cert-card reveal">
+          <img src="kicad-certificate.png" alt="Udemy certificate of completion for PCB Design in KiCad" loading="lazy" class="cert-image"/>
+          <div class="cert-body">
+            <span class="cert-tag">CERT // 01</span>
+            <h3>PCB Design in KiCad</h3>
+            <p class="cert-issuer">Udemy — Online Course Certificate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="organizations">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">06</span><h2>Organizations</h2></div>
+      <div class="section-head"><span class="section-tag">07</span><h2>Organizations</h2></div>
       <div class="org-grid">  
         <div class="org-card reveal">
+          <span class="num">1</span>
           <h3>Indonesian Society Secretary - 2026/27</h3>
           <p>Responsible for organizing events and managing communications within the Indonesian Society.</p>
           <div class="exp-tags"><span class="tag-sm">Leadership</span><span class="tag-sm">Event Management</span></div>
@@ -322,7 +347,7 @@
       
   <section id="sports">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">07</span><h2>Sports &amp; Recreation</h2></div>
+      <div class="section-head"><span class="section-tag">08</span><h2>Sports &amp; Recreation</h2></div>
       <p class="sports-desc">Beyond engineering, I'm passionate about staying active and competitive. Sports have shaped my discipline and resilience — qualities that translate directly into technical problem-solving.</p>
       <div class="sport-grid">
         <div class="sport-card reveal"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Actively competed in many sports events including the prestigious SOP (Schools of Olympics) Qatar.</div></div>
@@ -335,7 +360,7 @@
 
   <footer id="contact">
     <div class="wrap">
-      <div class="section-head"><span class="section-tag">08</span><h2>Contact</h2></div>
+      <div class="section-head"><span class="section-tag">09</span><h2>Contact</h2></div>
       <p style="color:var(--ink-soft); max-width:50ch;">Open to conversations about internships, protection engineering, or the Gulf EPC path — reach out any time.</p>
       <div class="contact-row">
         <a href="mailto:hirzi.fdh@gmail.com">hirzi.fdh@gmail.com</a>
