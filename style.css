@@ -231,8 +231,22 @@
   .project-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
   .tag-sm{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--teal); background:rgba(61,125,216,0.12); padding:3px 8px; border-radius:6px; }
 
-  /* ---------- Education / Skills (shared module-cloud) ---------- */
-  .edu-block{ display:grid; grid-template-columns:1fr 1.4fr; gap:40px; align-items:start; }
+  /* ---------- Education ---------- */
+  .edu-card{
+    background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px;
+    padding:28px 28px 8px;
+  }
+  .edu-entry{ padding-bottom:22px; margin-bottom:22px; border-bottom:1px dashed var(--paper-line); }
+  .edu-entry:last-child{ border-bottom:none; margin-bottom:0; }
+  .edu-years{
+    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em;
+    color:var(--amber); font-weight:600;
+  }
+  .edu-entry h3{ font-size:19px; font-weight:600; margin-top:8px; }
+  .edu-institution{ font-size:13.5px; color:var(--teal); margin:4px 0 10px; }
+  .edu-entry p{ color:var(--ink-soft); font-size:14.5px; max-width:64ch; margin:0 0 14px; }
+
+  /* Shared pill cloud, still used inside the Education card */
   .module-cloud{ display:flex; flex-wrap:wrap; gap:8px; }
   .module-pill{ font-size:13px; padding:6px 12px; border-radius:8px; background:var(--card-bg); border:1px solid var(--paper-line); color:var(--ink-soft); transition: border-color .2s ease, color .2s ease, transform .2s ease; }
   .module-pill:hover{ border-color:var(--teal); color:var(--teal); transform:translateY(-2px); }
@@ -263,7 +277,7 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 760px){
-    .about-grid, .edu-block{ grid-template-columns:1fr; }
+    .about-grid{ grid-template-columns:1fr; }
     section{ padding:56px 0; }
   }
   @media (max-width: 560px){
