@@ -722,3 +722,42 @@ with tab2:
             file_name=f"87G_Sweep_Test_Table_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv"
         )
+
+        # -------------------------------------------------------------
+        # SWEEP TEST PLOT — mirrors the commissioning test report format:
+        # a smooth calculated ("CAL.") curve with the sweep's planned test points
+        # overlaid on it. Uses the same units toggle (pu / Secondary Amps) chosen
+        # in the Live Vector Simulation tab, so both charts stay consistent.
+        # Note: unlike the Live tab's Phase A/B/C markers (which reflect actual
+        # per-phase readings), these points are the generic sweep test plan —
+        # they land exactly on the curve by construction, since each one is
+        # calculated as that exact restraint level's boundary operating current.
+        # -------------------------------------------------------------
+        st.markdown("#### 📈 Sweep Test Plot")
+        df_sweep = st.session_state["sweep_df"]
+
+        curve_x_pu = np.linspace(0, float(df_sweep["I_rest (pu)"].max()), 300)
+        curve_y_pu = [relay.calculate_trip_threshold(x) for x in curve_x_pu]
+        curve_x = curve_x_pu * amps_base if use_amps else curve_x_pu
+        curve_y = np.array(curve_y_pu) * amps_base if use_amps else np.array(curve_y_pu)
+
+        pts_x = df_sweep["I_rest (pu)"].to_numpy() * amps_base if use_amps else df_sweep["I_rest (pu)"].to_numpy()
+        pts_y = df_sweep["Boundary I_op (pu)"].to_numpy() * amps_base if use_amps else df_sweep["Boundary I_op (pu)"].to_numpy()
+
+        sweep_fig = go.Figure()
+        sweep_fig.add_trace(go.Scatter(
+            x=curve_x, y=curve_y, mode="lines", name="CAL.",
+            line=dict(color="#2E8B57", width=3)
+        ))
+        sweep_fig.add_trace(go.Scatter(
+            x=pts_x, y=pts_y, mode="markers", name="Test Points",
+            marker=dict(size=11, color="#1E3A8A", symbol="square")
+        ))
+        sweep_fig.update_layout(
+            title="Differential Slope Characteristic Curve — Sweep Test Plan",
+            xaxis_title=f"Restraint Current ({unit_label})",
+            yaxis_title=f"Diff. Current ({unit_label})",
+            template="plotly_white",
+            height=450
+        )
+        st.plotly_chart(sweep_fig, use_container_width=True)
