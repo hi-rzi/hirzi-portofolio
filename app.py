@@ -575,25 +575,40 @@ with tab1:
     # INTERACTIVE PLOTLY GRAPHIC
     st.subheader("📈 Restraint Characteristic Trip Curve Visualization")
 
+    chart_units = st.radio(
+        "Chart units", ["Per-Unit (pu)", "Secondary Amps (A)"], horizontal=True,
+        help="Secondary Amps matches how commissioning test reports are usually plotted "
+             "(e.g. GEK-34124 Figure 7). Conversion uses the Neutral-side rated secondary "
+             "current as the base — accurate as long as both CTs share the same ratio, "
+             "which they do for this unit (24000:5 on both sides)."
+    )
+    use_amps = chart_units == "Secondary Amps (A)"
+    amps_base = relay.i_rated_sec_N  # both CTs share the same ratio for this unit
+
     has_unrestrained_element = relay.i_unrestrained < 1e5
     extra_range = (relay.break_2 + 1.0) if current_mode == "GENERATOR" else 0.0
     max_x_val = max(6.0, max(e["i_rest_pu"] for e in evals.values()) + 1.5, extra_range)
     x_axis_line = np.linspace(0, max_x_val, 400)
     y_axis_line = [relay.calculate_trip_threshold(x) for x in x_axis_line]
 
+    x_plot = x_axis_line * amps_base if use_amps else x_axis_line
+    y_plot = np.array(y_axis_line) * amps_base if use_amps else np.array(y_axis_line)
+    unit_label = "A" if use_amps else "pu"
+
     fig = go.Figure()
 
     # Slope boundary
     fig.add_trace(go.Scatter(
-        x=x_axis_line, y=y_axis_line, mode='lines', name='Trip Slopes Boundary',
+        x=x_plot, y=y_plot, mode='lines', name='CAL.',
         line=dict(color='#2563EB', width=3)
     ))
 
     # High-set boundary — only meaningful when this relay actually has an unrestrained
     # element enabled and confirmed by the user.
     if has_unrestrained_element:
+        hs_val = relay.i_unrestrained * amps_base if use_amps else relay.i_unrestrained
         fig.add_trace(go.Scatter(
-            x=[0, max_x_val], y=[relay.i_unrestrained, relay.i_unrestrained],
+            x=[0, max_x_val * amps_base if use_amps else max_x_val], y=[hs_val, hs_val],
             mode='lines', name='Unrestrained High-Set',
             line=dict(color='#DC2626', width=2, dash='dash')
         ))
@@ -602,21 +617,25 @@ with tab1:
     phase_colors = {"Phase A": "red", "Phase B": "green", "Phase C": "blue"}
     for p in phases:
         e = evals[p]
+        px = e["i_rest_pu"] * amps_base if use_amps else e["i_rest_pu"]
+        py = e["i_op_pu"] * amps_base if use_amps else e["i_op_pu"]
         fig.add_trace(go.Scatter(
-            x=[e["i_rest_pu"]], y=[e["i_op_pu"]],
-            mode='markers+text', name=f"{p} Current Point",
+            x=[px], y=[py],
+            mode='markers+text', name=f"{p}",
             text=[f"{p}"], textposition="top center",
             marker=dict(size=14, color=phase_colors[p], symbol='x' if e["is_trip"] else 'circle'),
-            hovertemplate=f"<b>{p}</b><br>I_rest: %{{x:.3f}} pu<br>I_op: %{{y:.3f}} pu<br>State: {e['status']}<extra></extra>"
+            hovertemplate=f"<b>{p}</b><br>I_rest: %{{x:.3f}} {unit_label}<br>I_op: %{{y:.3f}} {unit_label}<br>State: {e['status']}<extra></extra>"
         ))
 
     # Plot styling
-    y_upper = max(relay.i_unrestrained + 2.0, max(y_axis_line) + 1.0) if has_unrestrained_element else max(y_axis_line) + 1.0
+    y_upper_pu = max(relay.i_unrestrained + 2.0, max(y_axis_line) + 1.0) if has_unrestrained_element else max(y_axis_line) + 1.0
+    y_upper = y_upper_pu * amps_base if use_amps else y_upper_pu
+    x_upper = max_x_val * amps_base if use_amps else max_x_val
     fig.update_layout(
         title=f"{'GE G60 Dual-Breakpoint' if relay.mode == 'GENERATOR' else 'Single-Slope'} Restraint Plot ({relay.mode})",
-        xaxis_title="Restraint Current I_rest (pu)",
-        yaxis_title="Operating Current I_op (pu)",
-        xaxis=dict(range=[0, max_x_val]),
+        xaxis_title=f"Restraint Current I_rest ({unit_label})",
+        yaxis_title=f"Differential/Operating Current I_op ({unit_label})",
+        xaxis=dict(range=[0, x_upper]),
         yaxis=dict(range=[0, y_upper]),
         template="plotly_white",
         height=500
