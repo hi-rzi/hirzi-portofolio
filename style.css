@@ -1,294 +1,479 @@
-:root{
-    --paper:#0a1628;
-    --paper-line: rgba(255,255,255,0.05);
-    --ink:#f6f8fb;
-    --ink-soft:#c7d2e0;
-    --teal:#3d7dd8;
-    --teal-deep:#2a5aa0;
-    --amber:#E8A33D;
-    --amber-glow: rgba(232,163,61,0.55);
-    --plum:#3c5a80;
-    --plum-soft:#5c7ba3;
-    --card-bg:#101f38;
-    --max-w: 1120px;
-  }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hirzi — Electrical &amp; Protection Engineer</title>
+<meta name="description" content="Portfolio of Hirzi Fakhru Dzaki Hidayat — penultimate-year MEng Electrical & Electronic Engineering student, currently interning in protection relays and DCS systems at a 615 MW coal-fired power plant in East Java." />
+<meta property="og:title" content="Hirzi — Electrical & Protection Engineer" />
+<meta property="og:description" content="Power systems, protection, and control — from coursework projects to a live coal-fired plant internship." />
+<meta property="og:type" content="website" />
+<!-- Add a favicon.ico (or favicon.svg) to your repo root and uncomment the line below -->
+<!-- <link rel="icon" href="favicon.ico"> -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="progress-bar" id="progressBar"></div>
 
-  *{ box-sizing:border-box; }
-  html{ scroll-behavior:smooth; }
-  @media (prefers-reduced-motion: reduce){
-    html{ scroll-behavior:auto; }
-    *{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
-  }
+<!-- 
+  LIFE BACKDROP — five fixed, full-page photos that crossfade as you scroll,
+  giving a "taste of life" feel throughout the site instead of one static banner.
+  life-bg-1: GIS switchgear yard        -> About, Experience
+  life-bg-2: looking up at plant structure -> Education, Skills, Certifications
+  life-bg-3: futsal team with the trophy   -> Organizations, Sports
+  life-bg-4: transformer/plant yard        -> Projects
+  life-bg-5: jersey + medals + trophy flat-lay -> Contact
+  They're darkened a lot on purpose — meant to be felt as atmosphere, not read
+  as a photo.
+-->
+<div class="life-bg is-active" data-sections="about,experience" style="background-image:url('life-bg-1.jpg');"></div>
+<div class="life-bg" data-sections="education,skills,certifications" style="background-image:url('life-bg-2.jpg');"></div>
+<div class="life-bg" data-sections="organizations,sports" style="background-image:url('life-bg-3.jpg');"></div>
+<div class="life-bg" data-sections="projects" style="background-image:url('life-bg-4.jpg');"></div>
+<div class="life-bg" data-sections="contact" style="background-image:url('life-bg-5.jpg');"></div>
+<div class="life-bg-overlay"></div>
 
-  body{
-    margin:0;
-    background-color: var(--paper);
-    color:var(--ink);
-    font-family:'IBM Plex Sans', sans-serif;
-    font-size:16px;
-    line-height:1.65;
-  }
+<nav class="nav" aria-label="Primary">
+  <div class="wrap">
+    <span class="brand">Hirzi Hidayat // EEE Student</span>
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navList" aria-label="Toggle navigation menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul id="navList">
+      <li><a href="#about"><span class="status-dot"></span><span class="label">About</span></a></li>
+      <li><a href="#experience"><span class="status-dot"></span><span class="label">Experience</span></a></li>
+      <li><a href="#projects"><span class="status-dot"></span><span class="label">Projects</span></a></li>
+      <li><a href="#education"><span class="status-dot"></span><span class="label">Education</span></a></li>
+      <li><a href="#skills"><span class="status-dot"></span><span class="label">Skills</span></a></li>
+      <li><a href="#certifications"><span class="status-dot"></span><span class="label">Certifications</span></a></li>
+      <li><a href="#organizations"><span class="status-dot"></span><span class="label">Organizations</span></a></li>
+      <li><a href="#sports"><span class="status-dot"></span><span class="label">Sports</span></a></li>
+      <li><a href="#contact"><span class="status-dot"></span><span class="label">Contact</span></a></li>
+    </ul>
+  </div>
+</nav>
 
-  /* ---------- Life backdrop: fixed photo layers + darkening/grid overlay ---------- */
-  .life-bg{
-    position:fixed; inset:0; z-index:-2;
-    background-size:cover; background-position:center;
-    opacity:0; transition: opacity 1.4s ease;
-    filter: saturate(0.9) brightness(1.05);
-  }
-  .life-bg.is-active{ opacity:1; }
-  .life-bg-overlay{
-    position:fixed; inset:0; z-index:-1; pointer-events:none;
-    background:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,125,216,0.12), transparent 60%),
-      radial-gradient(ellipse 700px 500px at 100% 20%, rgba(61,125,216,0.08), transparent 60%),
-      linear-gradient(180deg, rgba(10,22,40,0.68), rgba(10,22,40,0.76)),
-      linear-gradient(var(--paper-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
-    background-size: auto, auto, auto, 56px 56px, 56px 56px;
-    background-repeat: no-repeat, no-repeat, no-repeat, repeat, repeat;
-  }
-  .nav, main, footer{ position:relative; z-index:1; }
+<main id="main">
 
-  a{ color:inherit; }
-  h1,h2,h3{ font-family:'Fraunces', serif; margin:0; }
-  .mono{ font-family:'IBM Plex Mono', monospace; }
+  <header class="hero wrap">
+    <p class="eyebrow">Electrical &amp; Electronic Engineering Student </p>
+    <h1>Hirzi Fakhru Dzaki Hidayat</h1>
+    <p class="tagline">Penultimate year MEng (Hons) Electrical and Electronic Engineering student at the University of Nottingham Malaysia, currently inside a 615 MW coal-fired plant in East Java learning how generators, transformers, and switchgear actually work.</p>
 
-  .wrap{ max-width:var(--max-w); margin:0 auto; padding:0 28px; }
+    <div class="sld" aria-hidden="false">
+      <svg viewBox="0 0 1100 200" role="img" aria-label="Single-line diagram used as site navigation: Generator, Breaker, Bus, feeding nine labeled sections. The breaker is clickable to toggle current flow.">
+        <!-- Generator -->
+        <circle class="sld-node-circle" cx="70" cy="60" r="26"/>
+        <text x="70" y="66" class="sld-label" style="font-weight:600;">G</text>
+        <text x="70" y="104" class="sld-caption">GEN</text>
+        <line class="sld-line power-line current-flow" x1="96" y1="60" x2="150" y2="60"/>
 
-  /* ---------- Skip link ---------- */
-  .skip-link{
-    position:absolute; left:-999px; top:0; background:var(--ink); color:#fff;
-    padding:10px 16px; z-index:100; border-radius:0 0 6px 0;
-  }
-  .skip-link:focus{ left:0; }
+        <!-- GCB breaker (click/tap to toggle open/closed) -->
+        <g class="gcb-toggle" data-state="closed" tabindex="0" role="button" aria-pressed="true"
+           aria-label="Toggle generator circuit breaker open or closed" style="--pivotx:170px; --pivoty:60px;">
+          <line class="sld-line breaker-blade" x1="150" y1="60" x2="192" y2="60"/>
+          <circle class="status-light" cx="171" cy="34" r="4"/>
+          <rect x="150" y="46" width="42" height="28" fill="transparent"/>
+        </g>
+        <text x="171" y="104" class="sld-caption">GCB</text>
+        <text x="171" y="117" class="sld-hint">(click me)</text>
+        <line class="sld-line power-line current-flow" x1="192" y1="60" x2="250" y2="60"/>
 
-  a:focus-visible, button:focus-visible{
-    outline:3px solid var(--amber); outline-offset:3px;
-  }
+        <!-- vertical riser to bus -->
+        <line class="sld-bus power-line current-flow" x1="250" y1="60" x2="250" y2="26"/>
+        <line class="sld-bus power-line current-flow" x1="250" y1="26" x2="1060" y2="26"/>
+        <text x="250" y="14" class="sld-caption" text-anchor="start">BUS</text>
 
-  /* ---------- Scroll progress bar ---------- */
-  .progress-bar{
-    position:fixed; top:0; left:0; height:3px; width:0%; z-index:200;
-    background:linear-gradient(90deg, var(--teal), var(--amber));
-    transition: width .1s linear;
-  }
+       <!-- Feeders — order matches the actual page/section order (About -> Contact) -->
+        <g class="feeder-group" data-target="#about" tabindex="0" role="link" aria-label="Go to About section">
+          <line class="sld-line" x1="331" y1="26" x2="331" y2="150"/>
+          <line class="sld-line" x1="317" y1="150" x2="345" y2="150" transform="rotate(-30 331 150)"/>
+          <text x="331" y="178" class="sld-label">ABOUT</text>
+        </g>
+        <g class="feeder-group" data-target="#experience" tabindex="0" role="link" aria-label="Go to Experience section">
+          <line class="sld-line" x1="412" y1="26" x2="412" y2="150"/>
+          <line class="sld-line" x1="398" y1="150" x2="426" y2="150" transform="rotate(-30 412 150)"/>
+          <text x="412" y="178" class="sld-label">EXPERIENCE</text>
+        </g>
+        <g class="feeder-group" data-target="#projects" tabindex="0" role="link" aria-label="Go to Projects section">
+          <line class="sld-line" x1="493" y1="26" x2="493" y2="150"/>
+          <line class="sld-line" x1="479" y1="150" x2="507" y2="150" transform="rotate(-30 493 150)"/>
+          <text x="493" y="178" class="sld-label">PROJECTS</text>
+        </g>
+        <g class="feeder-group" data-target="#education" tabindex="0" role="link" aria-label="Go to Education section">
+          <line class="sld-line" x1="574" y1="26" x2="574" y2="150"/>
+          <line class="sld-line" x1="560" y1="150" x2="588" y2="150" transform="rotate(-30 574 150)"/>
+          <text x="574" y="178" class="sld-label">EDUCATION</text>
+        </g>
+        <g class="feeder-group" data-target="#skills" tabindex="0" role="link" aria-label="Go to Skills section">
+          <line class="sld-line" x1="655" y1="26" x2="655" y2="150"/>
+          <line class="sld-line" x1="641" y1="150" x2="669" y2="150" transform="rotate(-30 655 150)"/>
+          <text x="655" y="178" class="sld-label">SKILLS</text>
+        </g>
+        <g class="feeder-group" data-target="#certifications" tabindex="0" role="link" aria-label="Go to Certifications section">
+          <line class="sld-line" x1="736" y1="26" x2="736" y2="150"/>
+          <line class="sld-line" x1="722" y1="150" x2="750" y2="150" transform="rotate(-30 736 150)"/>
+          <text x="736" y="178" class="sld-label">CERTIFICATIONS</text>
+        </g>
+        <g class="feeder-group" data-target="#organizations" tabindex="0" role="link" aria-label="Go to Organizations section">
+          <line class="sld-line" x1="817" y1="26" x2="817" y2="150"/>
+          <line class="sld-line" x1="803" y1="150" x2="831" y2="150" transform="rotate(-30 817 150)"/>
+          <text x="817" y="178" class="sld-label">ORGANIZATIONS</text>
+        </g>
+        <g class="feeder-group" data-target="#sports" tabindex="0" role="link" aria-label="Go to Sports section">
+          <line class="sld-line" x1="898" y1="26" x2="898" y2="150"/>
+          <line class="sld-line" x1="884" y1="150" x2="912" y2="150" transform="rotate(-30 898 150)"/>
+          <text x="898" y="178" class="sld-label">SPORTS</text>
+        </g>
+        <g class="feeder-group" data-target="#contact" tabindex="0" role="link" aria-label="Go to Contact section">
+          <line class="sld-line" x1="979" y1="26" x2="979" y2="150"/>
+          <line class="sld-line" x1="965" y1="150" x2="993" y2="150" transform="rotate(-30 979 150)"/>
+          <text x="979" y="178" class="sld-label">CONTACT</text>
+        </g>
+      </svg>
+    </div>
+  </header>
 
-  /* ---------- Sticky nav ---------- */
-  .nav{
-    position:sticky; top:0; z-index:50;
-    background:rgba(10,22,40,0.85); backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--paper-line);
-  }
-  .nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:56px; position:relative; }
-  .nav .brand{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:14px; letter-spacing:.06em; }
-  .nav ul{ list-style:none; display:flex; gap:22px; margin:0; padding:0; }
-  .nav a{ text-decoration:none; font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:.05em; color:var(--ink-soft); display:flex; align-items:center; gap:6px; transition: color .2s ease; }
-  .nav a:hover, .nav a.active{ color:var(--teal); }
-  .status-dot{ width:6px; height:6px; border-radius:50%; background:var(--amber); box-shadow:0 0 6px var(--amber-glow); flex:none; transition: box-shadow .3s ease, transform .3s ease; }
-  .nav a.active .status-dot{ box-shadow:0 0 10px var(--amber-glow); transform:scale(1.3); }
+  <section id="about">
+    <div class="wrap about-grid">
+      <div>
+        <div class="section-head"><span class="section-tag">01</span><h2>About</h2></div>
+        <p>I am completing my degree in Electrical and Electronic Engineering at the University of Nottingham Malaysia, with a growing focus on power systems, protection, and control. I'm currently on an internship at POMI, a power generation facility in East Java.</p>
+        <p>Malaysia is where I study — home base is Qatar, and I hold Indonesian citizenship. I'm looking to build my career in Qatar or Malaysia, with an eye on Europe if the right opportunity comes along, and I'm especially drawn to renewable energy.</p>
+      </div>
+      <div class="nameplate reveal">
+        <div class="title">Nameplate Data</div>
+        <dl>
+          <dt>Location</dt><dd>Probolinggo, ID. Semenyih, MY. Al Khor, QA</dd>
+          <dt>Base</dt><dd>Qatar</dd>
+          <dt>Institution</dt><dd>University of Nottingham Malaysia</dd>
+          <dt>Programme</dt><dd>MEng Electrical &amp; Electronic Eng.</dd>
+          <dt>Focus</dt><dd>Power Systems · Protection · Control</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
 
-  /* ---------- Mobile nav toggle (hamburger) ---------- */
-  .nav-toggle{
-    display:none; background:none; border:1px solid var(--paper-line); border-radius:5px;
-    width:36px; height:32px; padding:0; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:5px;
-  }
-  .nav-toggle span{ width:18px; height:2px; background:var(--ink-soft); display:block; transition: transform .2s ease, opacity .2s ease; }
-  .nav-toggle[aria-expanded="true"] span:nth-child(1){ transform: translateY(7px) rotate(45deg); }
-  .nav-toggle[aria-expanded="true"] span:nth-child(2){ opacity:0; }
-  .nav-toggle[aria-expanded="true"] span:nth-child(3){ transform: translateY(-7px) rotate(-45deg); }
+  <section id="experience">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">02</span><h2>Experience</h2></div>
+      <div class="exp-grid">
+        <div class="exp-card reveal">
+          <span class="num">1</span>
+          <h3>Internship</h3>
+          <p>POMI — Paiton Operations &amp; Maintenance Indonesia</p>
+          <p>June 2026 – Present</p>
+          <p>Throughout my internship in POMI, I have learned about relay platforms and DCS systems spanning both motor management and transformer/feeder protection — building technical presentations and working with cutting-edge power systems.</p>
 
-  /* ---------- Hero ---------- */
-  .hero{ padding:64px 0 24px; }
-  .hero .eyebrow{
-    font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:.12em;
-    color:var(--teal); text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:10px;
-  }
-  .hero .eyebrow::before{ content:""; width:22px; height:1px; background:var(--teal); display:inline-block; }
-  .hero h1{ font-size:clamp(40px, 7vw, 76px); font-weight:600; letter-spacing:-0.01em; color:var(--ink); }
-  .hero .tagline{ margin-top:16px; max-width:640px; font-size:18px; color:var(--ink-soft); }
+          <div class="exp-subhead">Protection Relays Worked With</div>
+          <div class="relay-row">
+            <div class="relay-card reveal"><div class="model">GE 469</div><div class="role">Motor Management (legacy)</div></div>
+            <div class="relay-card reveal"><div class="model">GE 869</div><div class="role">Motor Management (current)</div></div>
+            <div class="relay-card reveal"><div class="model">GE 350</div><div class="role">Feeder Protection</div></div>
+            <div class="relay-card reveal"><div class="model">GE T60</div><div class="role">Transformer Protection</div></div>
+          </div>
 
-  /* ---------- SLD signature diagram ---------- */
-  .sld{ margin-top:46px; }
-  .sld svg{ width:100%; height:auto; display:block; overflow:visible; }
-  .sld-line{ stroke:var(--ink-soft); stroke-width:2; }
-  .sld-bus{ stroke:var(--ink); stroke-width:4; }
-  .sld-node-circle{ fill:var(--paper); stroke:var(--ink); stroke-width:2; }
-  .sld-label{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; fill:var(--ink-soft); text-anchor:middle; }
-  .sld-caption{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; fill:var(--ink-soft); text-anchor:middle; opacity:.75;}
-  .sld-hint{ font-family:'IBM Plex Mono', monospace; font-size:9.5px; fill:var(--ink-soft); text-anchor:middle; opacity:.55; }
+          <div class="exp-subhead">DCS &amp; Systems</div>
+          <div class="dcs-row">
+            <span class="pill">Emerson Ovation (master DCS)</span>
+            <span class="pill">Mark VIe vE</span>
+            <span class="pill">FSSS — Allen-Bradley</span>
+            <span class="pill">Single-Line Diagrams</span>
+            <span class="pill">Switchgear &amp; Transformers</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  /* current-flow animation along the generator -> breaker -> bus lines */
-  .power-line{ transition: opacity .35s ease; }
-  .power-line.current-flow{ stroke-dasharray:6 6; animation: dashflow 1s linear infinite; }
-  .power-line.de-energized{ opacity:.25; }
-  @keyframes dashflow{ to{ stroke-dashoffset:-24; } }
+  <section id="projects">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">03</span><h2>Projects</h2></div>
+      <div class="project-grid">  
+        <div class="project-card reveal">
+          <span class="num">1</span>
+          <h3>Isolated Two Switch Forward Converter</h3>
+          <img src="forward-converter-pcb.jpg" alt="Forward Converter PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="control-circuit-pcb.jpg" alt="Control Circuit PCB" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="closed-loop.jpg" alt="Closed Loop Control" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <p>Designed and built a prototype of a closed-loop isolated two switch forward converter as part of a Energy Design Group Project.</p>
+          <div class="project-tags"><span class="tag-sm">Power Electronics</span><span class="tag-sm">Control Circuit</span></div>
+      </div>
+        <div class="project-card reveal">
+          <span class="num">2</span>
+          <h3>Grid-Connected PV System Design</h3>
+          <img src="pv-system-cover.png" alt="Cover page of the Grid-Connected Photovoltaic Power System design report" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <p>Sized and reported a PV system using ENERGYEA EA300P modules and a DEYE SUN-20K-G04 inverter as part of a group coursework project.</p>
+          <div class="project-tags"><span class="tag-sm">Solar PV</span><span class="tag-sm">System Design</span></div>
+        </div>
+        <div class="project-card reveal">
+          <span class="num">3</span>
+          <h3>Doppler Radar Speed Detection</h3>
+          <img src="doppler-radar-breadboard.jpg" alt="Doppler radar breadboard circuit with 7-segment display" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <img src="doppler-radar-display.jpg" alt="LCD keypad shield showing measured FFT frequency and speed" loading="lazy" style="width:100%; border-radius:6px; margin-top:8px;"/>
+          <p>Embedded system on an STM32 (comparator and ADC/FFT methods) communicating via RS485 to a Xilinx CoolRunner-II CPLD driving a 7-segment display.</p>
+          <div class="project-tags"><span class="tag-sm">STM32</span><span class="tag-sm">CPLD</span><span class="tag-sm">Embedded Systems</span></div>
+        </div>        
+      </div>
+    </div>
+  </section>
 
-  .status-light{ fill:var(--amber); filter:drop-shadow(0 0 4px var(--amber-glow)); opacity:0; animation:glow-in .6s ease-out .9s forwards; transition: opacity .3s ease; }
-  @keyframes glow-in{ to{ opacity:1; } }
-  .breaker-blade{ stroke:var(--ink); stroke-width:2.5; transform-origin: var(--pivotx) var(--pivoty);
-    animation: close-breaker 1s ease-in-out .3s both; transition: transform .4s ease; }
-  @keyframes close-breaker{
-    0%{ transform: rotate(-38deg); }
-    100%{ transform: rotate(0deg); }
-  }
-  .gcb-toggle{ cursor:pointer; }
-  .gcb-toggle[data-state="open"] .breaker-blade{ transform: rotate(-38deg) !important; animation:none; }
-  .gcb-toggle[data-state="open"] .status-light{ opacity:0 !important; }
-  .gcb-toggle:focus-visible{ outline:3px solid var(--amber); outline-offset:6px; }
+  <section id="education">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">04</span><h2>Education</h2></div>
+      <div class="edu-card reveal">
+        <div class="edu-entry">
+          <span class="edu-years">2024 – 2028</span>
+          <h3>MEng (Hons) Electrical and Electronic Engineering</h3>
+          <p class="edu-institution">University of Nottingham Malaysia</p>
+          <p>Coursework spans machines, control theory, power electronics, communications, and embedded systems design.</p>
+          <div class="module-cloud">
+            <span class="module-pill">DC &amp; Electrical Machines</span>
+            <span class="module-pill">Modelling: Methods &amp; Tools</span>
+            <span class="module-pill">Power Electronics</span>
+            <span class="module-pill">Analogue &amp; Digital Comms</span>
+            <span class="module-pill">Power and Energy</span>
+            <span class="module-pill">Digital Electronics</span>
+            <span class="module-pill">Electrical Energy Conditioning &amp; Control</span>
+            <span class="module-pill">Design and Implementation of Engineering Software</span>
+            <span class="module-pill">Information and Systems</span>
+          </div>
+        </div>
+        <div class="edu-entry">
+          <span class="edu-years">2023 – 2024</span>
+          <h3>Foundation in Engineering</h3>
+          <p class="edu-institution">University of Nottingham Malaysia</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  .feeder-group{ cursor:pointer; }
-  .feeder-group .sld-line, .feeder-group .sld-node-circle{ transition: stroke .2s ease; }
-  .feeder-group:hover .sld-line, .feeder-group:hover .sld-node-circle{ stroke:var(--teal); }
-  .feeder-group:hover .sld-label{ fill:var(--teal); }
-  .feeder-group:focus-visible{ outline:3px solid var(--amber); outline-offset:4px; }
+  <section id="skills">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">05</span><h2>Skills</h2></div>
+      <div class="skill-grid">
+        <div class="skill-card reveal">
+          <span class="skill-tag">PROT // 01</span>
+          <h3>Protection &amp; Plant Systems</h3>
+          <ul class="skill-list">
+            <li>Protection Relays — GE 469 / 869 / 350 / T60</li>
+            <li>DCS — Emerson Ovation, Mark VIe vE, FSSS (Allen-Bradley)</li>
+            <li>Single-Line Diagram Reading &amp; Drafting</li>
+            <li>Switchgear &amp; Transformers</li>
+          </ul>
+        </div>
+        <div class="skill-card reveal">
+          <span class="skill-tag">SIM // 02</span>
+          <h3>Simulation &amp; Analysis</h3>
+          <ul class="skill-list">
+            <li>LTspice</li>
+            <li>PLECS</li>
+            <li>Proteus</li>
+            <li>Simulink</li>
+          </ul>
+        </div>
+        <div class="skill-card reveal">
+          <span class="skill-tag">PCB // 03</span>
+          <h3>PCB Design</h3>
+          <ul class="skill-list">
+            <li>KiCAD</li>
+          </ul>
+        </div>
+        <div class="skill-card reveal">
+          <span class="skill-tag">PRG // 04</span>
+          <h3>Programming</h3>
+          <ul class="skill-list">
+            <li>C</li>
+            <li>C++</li>
+            <li>Python</li>
+            <li>MATLAB</li>
+          </ul>
+        </div>
+        <div class="skill-card reveal">
+          <span class="skill-tag">MCU // 05</span>
+          <h3>Microcontrollers &amp; Embedded</h3>
+          <ul class="skill-list">
+            <li>Arduino</li>
+            <li>STM32</li>
+            <li>Raspberry Pi</li>
+            <li>Xilinx CoolRunner-II CPLD</li>
+          </ul>
+        </div>
+        <div class="skill-card reveal">
+          <span class="skill-tag">DRW // 06</span>
+          <h3>Drawings &amp; Design</h3>
+          <ul class="skill-list">
+            <li>AutoCAD Electrical</li>
+            <li>Solar PV System Sizing</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  /* ---------- Scroll reveal ---------- */
-  .reveal{ opacity:0; transform:translateY(20px); transition:opacity .6s ease, transform .6s ease; }
-  .reveal.is-visible{ opacity:1; transform:translateY(0); }
+  <section id="certifications">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">06</span><h2>Certifications</h2></div>
+      <div class="cert-grid">
+        <div class="cert-card reveal">
+          <img src="kicad-certificate.jpg" alt="Udemy certificate of completion for PCB Design in KiCad" loading="lazy" class="cert-image"/>
+          <div class="cert-body">
+            <span class="cert-tag">CERT // 01</span>
+            <h3>PCB Design in KiCad</h3>
+            <p class="cert-issuer">Udemy — Online Course Certificate</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  /* ---------- Section shell ---------- */
-  section{ padding:76px 0; border-top:1px solid var(--paper-line); }
-  .section-head{ display:flex; align-items:baseline; gap:16px; margin-bottom:36px; flex-wrap:wrap; }
-  .section-tag{ font-family:'IBM Plex Mono', monospace; font-size:12.5px; letter-spacing:.1em; color:var(--teal); background:rgba(61,125,216,0.12); padding:4px 10px; border-radius:6px; }
-  .section-head h2{ font-size:clamp(26px,3.6vw,36px); font-weight:600; }
+  <section id="organizations">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">07</span><h2>Organizations</h2></div>
+      <div class="org-grid">  
+        <div class="org-card reveal">
+          <span class="num">1</span>
+          <h3>Indonesian Society Secretary - 2026/27</h3>
+          <p>Responsible for organizing events and managing communications within the Indonesian Society.</p>
+          <div class="exp-tags"><span class="tag-sm">Leadership</span><span class="tag-sm">Event Management</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+      
+  <section id="sports">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">08</span><h2>Sports &amp; Recreation</h2></div>
+      <p class="sports-desc">Beyond engineering, I'm passionate about staying active and competitive. Sports have shaped my discipline and resilience — qualities that translate directly into technical problem-solving.</p>
+      <div class="sport-grid">
+        <div class="sport-card reveal"><div class="name">Football</div><div class="level">Competitive</div><div class="description">Actively competed in many sports events including the prestigious SOP (Schools of Olympics) Qatar.</div></div>
+        <div class="sport-card reveal"><div class="name">Futsal</div><div class="level">Competitive</div><div class="description">Represented university in national league for Higher Institutions.</div></div>
+        <div class="sport-card reveal"><div class="name">Swimming</div><div class="level">Recreational</div><div class="description">Endurance training and a way to maintain fitness balance alongside demanding coursework.</div></div>
+        <div class="sport-card reveal"><div class="name">Gym Training</div><div class="level">Regular</div><div class="description">Strength and conditioning to maintain physical resilience for long technical problem-solving sessions.</div></div>
+      </div>
+    </div>
+  </section>
 
-  /* ---------- About ---------- */
-  .about-grid{ display:grid; grid-template-columns: 1.5fr 1fr; gap:40px; align-items:start; }
-  .about-grid p{ color:var(--ink-soft); font-size:16.5px; max-width:56ch; }
-  .nameplate{
-    background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px;
-    padding:22px 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-  }
-  .nameplate:hover{ transform:translateY(-4px); box-shadow:0 12px 28px rgba(0,0,0,0.35); border-color:var(--teal); }
-  .nameplate .title{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.14em; color:var(--ink-soft); text-transform:uppercase; margin-bottom:14px; border-bottom:1px dashed var(--paper-line); padding-bottom:10px; }
-  .nameplate dl{ margin:0; display:grid; grid-template-columns: auto 1fr; gap:8px 14px; }
-  .nameplate dt{ font-family:'IBM Plex Mono', monospace; font-size:11.5px; color:var(--ink-soft); white-space:nowrap; }
-  .nameplate dd{ margin:0; font-size:13.5px; font-weight:500; }
+  <footer id="contact">
+    <div class="wrap">
+      <div class="section-head"><span class="section-tag">09</span><h2>Contact</h2></div>
+      <p style="color:var(--ink-soft); max-width:50ch;">Open to conversations about internships, protection engineering, or the Gulf EPC path — reach out any time.</p>
+      <div class="contact-row">
+        <a href="mailto:hirzi.fdh@gmail.com">hirzi.fdh@gmail.com</a>
+        <a href="https://www.linkedin.com/in/hirzi-hidayat-ba8a9b202/">LinkedIn ↗</a>
+        <!-- Add your GitHub username below -->
+        <a href="https://github.com/YOUR-USERNAME">GitHub ↗</a>
+      </div>
+    </div>
+  </footer>
 
-  /* ---------- Card hover lift (shared across sections) ---------- */
-  .exp-card, .project-card, .org-card, .sport-card, .relay-card{
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-  }
-  .exp-card:hover, .project-card:hover, .org-card:hover, .sport-card:hover, .relay-card:hover{
-    transform: translateY(-4px);
-    box-shadow: 0 16px 36px rgba(0,0,0,0.28);
-    border-color: var(--teal);
-  }
+</main>
 
-  /* ---------- Experience ---------- */
-  .exp-grid{ display:block; }
-  .exp-card{ background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px; padding:26px 26px 24px; display:flex; flex-direction:column; gap:10px; }
-  .exp-card .num{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); font-weight:600; }
-  .exp-card h3{ font-size:19px; font-weight:600; }
-  .exp-card p{ font-size:14px; color:var(--ink-soft); margin:0; max-width:70ch; }
-  .exp-subhead{
-    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--ink-soft); margin-top:14px; padding-top:14px; border-top:1px dashed var(--paper-line);
-  }
-  .exp-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-  .relay-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:14px; margin-top:10px; }
-  .relay-card{
-    background:var(--card-bg); border:1px solid var(--paper-line); border-radius:12px; padding:16px 18px;
-  }
-  .relay-card .model{ font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:15px; color:var(--teal); }
-  .relay-card .role{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; text-transform:uppercase; letter-spacing:.04em; }
-  .dcs-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
-  .pill{ font-family:'IBM Plex Mono', monospace; font-size:12px; padding:6px 12px; border-radius:20px; border:1px solid var(--paper-line); color:var(--ink-soft); background:var(--card-bg); transition: border-color .2s ease, color .2s ease; }
-  .pill:hover{ border-color:var(--teal); color:var(--teal); }
-
-  /* ---------- Skills ---------- */
-  .skill-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px,1fr)); gap:18px; }
-  .skill-card{
-    background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px;
-    padding:22px 22px 20px; display:flex; flex-direction:column; gap:12px;
-    border-top:3px solid var(--teal);
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
-  }
-  .skill-card:hover{ transform: translateY(-4px); box-shadow: 0 16px 36px rgba(0,0,0,0.28); border-color:var(--teal); }
-  .skill-tag{
-    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em;
-    color:var(--amber); font-weight:600;
-  }
-  .skill-card h3{ font-size:18px; font-weight:600; padding-bottom:10px; border-bottom:1px dashed var(--paper-line); }
-  .skill-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:7px; }
-  .skill-list li{
-    font-size:13.5px; color:var(--ink-soft); padding-left:18px; position:relative;
-  }
-  .skill-list li::before{
-    content:"▸"; position:absolute; left:0; color:var(--teal); font-size:12px; top:1px;
-  }
-
-  /* ---------- Projects ---------- */
-  .project-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
-  .project-card{ background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:10px; }
-  .project-card .num{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); font-weight:600; }
-  .project-card h3{ font-size:19px; font-weight:600; }
-  .project-card p{ font-size:14px; color:var(--ink-soft); margin:0; }
-  .project-card img{ transition: transform .3s ease; }
-  .project-card img:hover{ transform: scale(1.03); }
-  .project-tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-  .tag-sm{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--teal); background:rgba(61,125,216,0.12); padding:3px 8px; border-radius:6px; }
-
-  /* ---------- Education ---------- */
-  .edu-card{
-    background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px;
-    padding:28px 28px 8px;
-  }
-  .edu-entry{ padding-bottom:22px; margin-bottom:22px; border-bottom:1px dashed var(--paper-line); }
-  .edu-entry:last-child{ border-bottom:none; margin-bottom:0; }
-  .edu-years{
-    font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:.12em;
-    color:var(--amber); font-weight:600;
-  }
-  .edu-entry h3{ font-size:19px; font-weight:600; margin-top:8px; }
-  .edu-institution{ font-size:13.5px; color:var(--teal); margin:4px 0 10px; }
-  .edu-entry p{ color:var(--ink-soft); font-size:14.5px; max-width:64ch; margin:0 0 14px; }
-
-  /* Shared pill cloud, still used inside the Education card */
-  .module-cloud{ display:flex; flex-wrap:wrap; gap:8px; }
-  .module-pill{ font-size:13px; padding:6px 12px; border-radius:8px; background:var(--card-bg); border:1px solid var(--paper-line); color:var(--ink-soft); transition: border-color .2s ease, color .2s ease, transform .2s ease; }
-  .module-pill:hover{ border-color:var(--teal); color:var(--teal); transform:translateY(-2px); }
-
-  /* ---------- Organizations ---------- */
-  .org-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:20px; }
-  .org-card{ background:var(--card-bg); border:1px solid var(--paper-line); border-radius:14px; padding:22px; display:flex; flex-direction:column; gap:10px; }
-  .org-card .num{ font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--amber); font-weight:600; }
-  .org-card h3{ font-size:19px; font-weight:600; }
-  .org-card p{ font-size:14px; color:var(--ink-soft); margin:0; }
-
-  /* ---------- Sports ---------- */
-  #sports{
-    background: linear-gradient(180deg, rgba(61,125,216,0.07), rgba(61,125,216,0.02));
-  }
-  .sports-desc{ max-width:65ch; color:var(--ink-soft); font-size:16.5px; margin-bottom:32px; }
-  .sport-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; }
-  .sport-card{ background:var(--card-bg); border:1px solid rgba(61,125,216,0.18); border-radius:14px; padding:20px; }
-  .sport-card .name{ font-family:'Fraunces', serif; font-size:20px; font-weight:600; color:var(--teal); }
-  .sport-card .level{ font-family:'IBM Plex Mono', monospace; font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em; margin:6px 0 8px; }
-  .sport-card .description{ font-size:13.5px; color:var(--ink-soft); }
-
-  /* ---------- Contact / Footer ---------- */
-  footer{ padding:60px 0 50px; }
-  .contact-row{ display:flex; gap:26px; flex-wrap:wrap; margin-top:18px; }
-  .contact-row a{ font-family:'IBM Plex Mono', monospace; font-size:13.5px; text-decoration:none; border-bottom:1px solid var(--ink-soft); padding-bottom:2px; transition: border-color .2s ease, color .2s ease; }
-  .contact-row a:hover{ border-color:var(--teal); color:var(--teal); }
-
-  /* ---------- Responsive ---------- */
-  @media (max-width: 760px){
-    .about-grid{ grid-template-columns:1fr; }
-    section{ padding:56px 0; }
-  }
-  @media (max-width: 560px){
-    .nav-toggle{ display:flex; }
-    .nav ul{
-      display:none; position:absolute; top:56px; left:0; right:0;
-      flex-direction:column; gap:0; background:var(--paper);
-      border-bottom:1px solid var(--paper-line);
+<script>
+  // ---- SLD feeder nav clicks ----
+  document.querySelectorAll('.feeder-group').forEach(function(g){
+    function go(){
+      var target = document.querySelector(g.getAttribute('data-target'));
+      if(target){ target.scrollIntoView({behavior:'smooth', block:'start'}); }
     }
-    .nav ul.is-open{ display:flex; }
-    .nav ul li{ border-top:1px solid var(--paper-line); }
-    .nav ul a{ padding:14px 28px; }
-    .nav a span.label{ display:inline; }
+    g.addEventListener('click', go);
+    g.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); }
+    });
+  });
+
+  // ---- Scroll progress bar ----
+  var progressBar = document.getElementById('progressBar');
+  function updateProgress(){
+    var scrollTop = window.scrollY;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    if(progressBar) progressBar.style.width = pct + '%';
   }
+  window.addEventListener('scroll', updateProgress);
+  updateProgress();
+
+  // ---- Scroll-triggered reveal animations ----
+  var revealObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){ entry.target.classList.add('is-visible'); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(function(el){ revealObserver.observe(el); });
+
+  // ---- Active section highlighting in nav + life-bg photo crossfade ----
+  var navLinks = {};
+  document.querySelectorAll('.nav a[href^="#"]').forEach(function(a){
+    navLinks[a.getAttribute('href').slice(1)] = a;
+  });
+  var lifeBgs = document.querySelectorAll('.life-bg');
+  function setActiveBg(sectionId){
+    lifeBgs.forEach(function(bg){
+      var sections = (bg.getAttribute('data-sections') || '').split(',');
+      bg.classList.toggle('is-active', sections.indexOf(sectionId) !== -1);
+    });
+  }
+  var sectionObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      var id = entry.target.id;
+      if(entry.isIntersecting){
+        if(navLinks[id]){
+          Object.keys(navLinks).forEach(function(key){ navLinks[key].classList.remove('active'); });
+          navLinks[id].classList.add('active');
+        }
+        setActiveBg(id);
+      }
+    });
+  }, { threshold: 0.35, rootMargin: '-56px 0px -35% 0px' });
+  document.querySelectorAll('main section[id], footer[id]').forEach(function(s){
+    sectionObserver.observe(s);
+  });
+
+  // ---- GCB breaker toggle: click/tap or Enter/Space to open or close ----
+  var gcbToggle = document.querySelector('.gcb-toggle');
+  function toggleBreaker(){
+    var isOpenNow = gcbToggle.getAttribute('data-state') === 'open';
+    var newState = isOpenNow ? 'closed' : 'open';
+    gcbToggle.setAttribute('data-state', newState);
+    gcbToggle.setAttribute('aria-pressed', String(newState === 'closed'));
+    document.querySelectorAll('.power-line').forEach(function(line){
+      if(newState === 'open'){
+        line.classList.remove('current-flow');
+        line.classList.add('de-energized');
+      } else {
+        line.classList.add('current-flow');
+        line.classList.remove('de-energized');
+      }
+    });
+  }
+  if(gcbToggle){
+    gcbToggle.addEventListener('click', toggleBreaker);
+    gcbToggle.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleBreaker(); }
+    });
+  }
+
+  // ---- Mobile nav toggle ----
+  var navToggle = document.getElementById('navToggle');
+  var navList = document.getElementById('navList');
+  if(navToggle && navList){
+    navToggle.addEventListener('click', function(){
+      var isOpen = navList.classList.toggle('is-open');
+      navToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+    // close menu after picking a link (mobile)
+    navList.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){
+        navList.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+</script>
+
+</body>
+</html>
