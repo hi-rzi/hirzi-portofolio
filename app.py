@@ -648,19 +648,15 @@ with tab1:
 with tab2:
     st.subheader("🧰 Commissioning & Secondary Current Injection Assistant")
     st.write(
-        "Pick a target restraint current for each phase — the app calculates the exact "
-        "boundary operating current and the secondary Amps to inject at your test set for "
-        "that phase. Since each point is calculated as the boundary value at its chosen "
-        "restraint, all three will land exactly on the CAL. curve below, the same way a "
-        "real commissioning test report is built by testing each phase at a different "
-        "restraint level."
+        "Pick a target restraint current for each phase to calculate the exact secondary "
+        "Amps to inject at your test set for that phase — this is your test plan, telling "
+        "you what to dial in before you inject."
     )
 
     n_inj_label, t_inj_label = "Neutral Side", "Terminal Side"
-    phase_test_colors = {"Phase A": "#D63384", "Phase B": "#6C757D", "Phase C": "#1E3A8A"}
-    phase_test_symbols = {"Phase A": "square", "Phase B": "triangle-up", "Phase C": "square"}
     default_restraints = {"Phase A": 0.5, "Phase B": 2.5, "Phase C": 5.0}
 
+    st.markdown("#### 🎯 Boundary Injection Calculator")
     phase_test_points = {}
     cols = st.columns(3)
     for p, col in zip(phases, cols):
@@ -679,15 +675,69 @@ with tab2:
             st.caption(f"{t_inj_label} inject: **{sec_T:.3f} A**")
 
     # -------------------------------------------------------------
+    # ADD TEST POINTS — real, measured results from actual injection testing.
+    # These are what the chart below actually plots. Unlike the calculator
+    # above (which always lands exactly on the curve by construction), these
+    # can land anywhere — including off the curve — since that gap between
+    # calculated and measured is the whole point of a verification test.
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.markdown("#### 📝 Add Test Points (Actual Measured Results)")
+    st.caption(
+        "Enter the restraint and differential currents actually read off your test set's "
+        "ammeters during injection testing (in secondary Amps) — each one you add is "
+        "plotted on the curve below, so you can see how real results compare to the "
+        "calculated CAL. line."
+    )
+
+    if "manual_test_points" not in st.session_state:
+        st.session_state.manual_test_points = []
+
+    with st.form("add_test_point_form", clear_on_submit=True):
+        tc1, tc2, tc3, tc4 = st.columns([1, 1, 1, 1.4])
+        with tc1:
+            tp_phase = st.selectbox("Phase", ["Phase A", "Phase B", "Phase C", "Other"])
+        with tc2:
+            tp_restraint = st.number_input("Restraint Current (A)", min_value=0.0, value=1.0, step=0.1)
+        with tc3:
+            tp_diff = st.number_input("Measured Diff. Current (A)", min_value=0.0, value=0.3, step=0.05)
+        with tc4:
+            tp_label = st.text_input("Label (optional)", value="")
+        submitted = st.form_submit_button("➕ Add Test Point")
+        if submitted:
+            st.session_state.manual_test_points.append({
+                "Phase": tp_phase,
+                "Restraint (A)": round(tp_restraint, 3),
+                "Measured Diff (A)": round(tp_diff, 3),
+                "Label": tp_label
+            })
+
+    if st.session_state.manual_test_points:
+        tp_df = pd.DataFrame(st.session_state.manual_test_points)
+        st.dataframe(tp_df, use_container_width=True)
+
+        rc1, rc2 = st.columns(2)
+        with rc1:
+            remove_idx = st.number_input(
+                "Row # to remove (0-indexed)", min_value=0,
+                max_value=max(len(st.session_state.manual_test_points) - 1, 0),
+                value=0, step=1
+            )
+            if st.button("🗑️ Remove Row"):
+                st.session_state.manual_test_points.pop(int(remove_idx))
+                st.rerun()
+        with rc2:
+            if st.button("🗑️ Clear All Test Points"):
+                st.session_state.manual_test_points = []
+                st.rerun()
+    else:
+        st.info("No test points added yet — add some above to see them plotted below.")
+
+    # -------------------------------------------------------------
     # DIFFERENTIAL SLOPE CHARACTERISTIC CURVE — mirrors the commissioning test
-    # report format: a smooth calculated ("CAL.") curve with each phase's boundary
-    # test point overlaid on it. Since every point is calculated as the exact
-    # boundary at its own target restraint (set above), all three always land
-    # precisely on the CAL. line — the same way a real commissioning test report
-    # is built by testing each phase at a different restraint level. Has its own
-    # units toggle (pu / Secondary Amps), independent of the Live Vector
-    # Simulation tab's chart, so you can view this one in Amps without affecting
-    # the other.
+    # report format: a smooth calculated ("CAL.") curve with your actual test
+    # points overlaid on it. Has its own units toggle (pu / Secondary Amps),
+    # independent of the Live Vector Simulation tab's chart.
     # -------------------------------------------------------------
     st.markdown("---")
     st.markdown("#### 📈 Differential Slope Characteristic Curve")
@@ -703,7 +753,10 @@ with tab2:
     use_amps_comm = comm_chart_units == "Secondary Amps (A)"
     unit_label_comm = "A" if use_amps_comm else "pu"
 
-    max_restraint = max(pt["i_rest_pu"] for pt in phase_test_points.values())
+    manual_restraints_pu = [tp["Restraint (A)"] / amps_base for tp in st.session_state.manual_test_points]
+    all_restraints_pu = [pt["i_rest_pu"] for pt in phase_test_points.values()] + manual_restraints_pu
+    max_restraint = max(all_restraints_pu) if all_restraints_pu else 6.0
+
     curve_x_pu = np.linspace(0, max_restraint * 1.2 + 0.5, 300)
     curve_y_pu = [relay.calculate_trip_threshold(x) for x in curve_x_pu]
     curve_x = curve_x_pu * amps_base if use_amps_comm else curve_x_pu
@@ -715,14 +768,20 @@ with tab2:
         line=dict(color="#2E8B57", width=3)
     ))
 
-    for p in phases:
-        pt = phase_test_points[p]
-        px = pt["i_rest_pu"] * amps_base if use_amps_comm else pt["i_rest_pu"]
-        py = pt["i_op_pu"] * amps_base if use_amps_comm else pt["i_op_pu"]
+    tp_marker_colors = {"Phase A": "#D63384", "Phase B": "#6C757D", "Phase C": "#1E3A8A", "Other": "#F59E0B"}
+    tp_marker_symbols = {"Phase A": "square", "Phase B": "triangle-up", "Phase C": "square", "Other": "diamond"}
+
+    for tp in st.session_state.manual_test_points:
+        r_amps = tp["Restraint (A)"]
+        d_amps = tp["Measured Diff (A)"]
+        px = r_amps if use_amps_comm else r_amps / amps_base
+        py = d_amps if use_amps_comm else d_amps / amps_base
+        trace_name = tp["Phase"] + (f' ({tp["Label"]})' if tp["Label"] else "")
         sweep_fig.add_trace(go.Scatter(
-            x=[px], y=[py], mode="markers", name=p,
-            marker=dict(size=13, color=phase_test_colors[p], symbol=phase_test_symbols[p]),
-            hovertemplate=f"<b>{p}</b><br>I_rest: %{{x:.3f}} {unit_label_comm}<br>I_op (boundary): %{{y:.3f}} {unit_label_comm}<extra></extra>"
+            x=[px], y=[py], mode="markers", name=trace_name,
+            marker=dict(size=13, color=tp_marker_colors.get(tp["Phase"], "#F59E0B"),
+                        symbol=tp_marker_symbols.get(tp["Phase"], "diamond")),
+            hovertemplate=f"<b>{tp['Phase']}</b><br>Restraint: %{{x:.3f}} {unit_label_comm}<br>Measured Diff: %{{y:.3f}} {unit_label_comm}<extra></extra>"
         ))
 
     sweep_fig.update_layout(
@@ -732,11 +791,16 @@ with tab2:
         template="plotly_white",
         height=450
     )
-    st.plotly_chart(sweep_fig, use_container_width=True)
+
+    png_filename = f"87G_Differential_Slope_Curve_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}"
+    st.plotly_chart(
+        sweep_fig, use_container_width=True,
+        config={"toImageButtonOptions": {"format": "png", "filename": png_filename, "scale": 3}}
+    )
     st.caption(
-        "Each phase point above is calculated as the exact boundary at its target "
-        "restraint current (set above), so it lands precisely on the CAL. line — "
-        "matching how a real commissioning test report is typically built."
+        "📷 To save this chart as an image: hover over the top-right of the chart and "
+        "click the camera icon — it downloads a PNG directly from your browser, no extra "
+        "software needed."
     )
 
     # -------------------------------------------------------------
