@@ -647,31 +647,97 @@ with tab1:
 # SECONDARY TESTING INJECTION WORKBENCH
 with tab2:
     st.subheader("🧰 Commissioning & Secondary Current Injection Assistant")
-    st.write("Determine the exact test currents needed for field testing using Doble/Omicron test sets.")
+    st.write(
+        "Pick a target restraint current for each phase — the app calculates the exact "
+        "boundary operating current and the secondary Amps to inject at your test set for "
+        "that phase. Since each point is calculated as the boundary value at its chosen "
+        "restraint, all three will land exactly on the CAL. curve below, the same way a "
+        "real commissioning test report is built by testing each phase at a different "
+        "restraint level."
+    )
 
     n_inj_label, t_inj_label = "Neutral Side", "Terminal Side"
+    phase_test_colors = {"Phase A": "#D63384", "Phase B": "#6C757D", "Phase C": "#1E3A8A"}
+    phase_test_symbols = {"Phase A": "square", "Phase B": "triangle-up", "Phase C": "square"}
+    default_restraints = {"Phase A": 0.5, "Phase B": 2.5, "Phase C": 5.0}
 
-    col_test1, col_test2 = st.columns(2)
-    with col_test1:
-        test_restraint = st.slider("Required Target Restraint Current (pu)", 0.2, 5.0, 1.2, 0.1)
+    phase_test_points = {}
+    cols = st.columns(3)
+    for p, col in zip(phases, cols):
+        with col:
+            st.markdown(f"**{p}**")
+            r_val = slider_with_exact_input(
+                st, f"{p} Target Restraint (pu)", 0.1, 30.0, default_restraints[p], 0.1,
+                key=f"{current_mode}__{selected_preset}__commtest__{p}"
+            )
+            boundary_op = relay.calculate_trip_threshold(r_val)
+            sec_N = (r_val + boundary_op / 2.0) * relay.i_rated_sec_N
+            sec_T = (r_val - boundary_op / 2.0) * relay.i_rated_sec_T
+            phase_test_points[p] = {"i_rest_pu": r_val, "i_op_pu": boundary_op, "sec_N": sec_N, "sec_T": sec_T}
+            st.metric("Boundary I_op", f"{boundary_op:.3f} pu")
+            st.caption(f"{n_inj_label} inject: **{sec_N:.3f} A**")
+            st.caption(f"{t_inj_label} inject: **{sec_T:.3f} A**")
 
-    # Secondary injection values calculations
-    boundary_op_curr = relay.calculate_trip_threshold(test_restraint)
-
-    sec_N_injection = (test_restraint + boundary_op_curr / 2.0) * relay.i_rated_sec_N
-    sec_T_injection = (test_restraint - boundary_op_curr / 2.0) * relay.i_rated_sec_T
-
-    with col_test2:
-        st.metric(label="Calculated Boundary Operating Current (I_op)", value=f"{boundary_op_curr:.3f} pu")
-
+    # -------------------------------------------------------------
+    # DIFFERENTIAL SLOPE CHARACTERISTIC CURVE — mirrors the commissioning test
+    # report format: a smooth calculated ("CAL.") curve with each phase's boundary
+    # test point overlaid on it. Since every point is calculated as the exact
+    # boundary at its own target restraint (set above), all three always land
+    # precisely on the CAL. line — the same way a real commissioning test report
+    # is built by testing each phase at a different restraint level. Has its own
+    # units toggle (pu / Secondary Amps), independent of the Live Vector
+    # Simulation tab's chart, so you can view this one in Amps without affecting
+    # the other.
+    # -------------------------------------------------------------
     st.markdown("---")
-    st.write("### Target Relay Secondary Terminal Current Injection Parameters:")
+    st.markdown("#### 📈 Differential Slope Characteristic Curve")
 
-    c_sec_a, c_sec_b = st.columns(2)
-    with c_sec_a:
-        st.info(f"**{n_inj_label} Secondary Injection Current ($I_N$):**\n# {sec_N_injection:.3f} Amps AC")
-    with c_sec_b:
-        st.info(f"**{t_inj_label} Secondary Injection Current ($I_T$):**\n# {sec_T_injection:.3f} Amps AC")
+    comm_chart_units = st.radio(
+        "Chart units", ["Per-Unit (pu)", "Secondary Amps (A)"], horizontal=True,
+        key="comm_chart_units",
+        help="Secondary Amps matches how commissioning test reports are usually plotted "
+             "(e.g. GEK-34124 Figure 7). Conversion uses the Neutral-side rated secondary "
+             "current as the base — accurate as long as both CTs share the same ratio, "
+             "which they do for this unit (24000:5 on both sides)."
+    )
+    use_amps_comm = comm_chart_units == "Secondary Amps (A)"
+    unit_label_comm = "A" if use_amps_comm else "pu"
+
+    max_restraint = max(pt["i_rest_pu"] for pt in phase_test_points.values())
+    curve_x_pu = np.linspace(0, max_restraint * 1.2 + 0.5, 300)
+    curve_y_pu = [relay.calculate_trip_threshold(x) for x in curve_x_pu]
+    curve_x = curve_x_pu * amps_base if use_amps_comm else curve_x_pu
+    curve_y = np.array(curve_y_pu) * amps_base if use_amps_comm else np.array(curve_y_pu)
+
+    sweep_fig = go.Figure()
+    sweep_fig.add_trace(go.Scatter(
+        x=curve_x, y=curve_y, mode="lines", name="CAL.",
+        line=dict(color="#2E8B57", width=3)
+    ))
+
+    for p in phases:
+        pt = phase_test_points[p]
+        px = pt["i_rest_pu"] * amps_base if use_amps_comm else pt["i_rest_pu"]
+        py = pt["i_op_pu"] * amps_base if use_amps_comm else pt["i_op_pu"]
+        sweep_fig.add_trace(go.Scatter(
+            x=[px], y=[py], mode="markers", name=p,
+            marker=dict(size=13, color=phase_test_colors[p], symbol=phase_test_symbols[p]),
+            hovertemplate=f"<b>{p}</b><br>I_rest: %{{x:.3f}} {unit_label_comm}<br>I_op (boundary): %{{y:.3f}} {unit_label_comm}<extra></extra>"
+        ))
+
+    sweep_fig.update_layout(
+        title="Differential Slope Characteristic Curve",
+        xaxis_title=f"Restraint Current ({unit_label_comm})",
+        yaxis_title=f"Diff. Current ({unit_label_comm})",
+        template="plotly_white",
+        height=450
+    )
+    st.plotly_chart(sweep_fig, use_container_width=True)
+    st.caption(
+        "Each phase point above is calculated as the exact boundary at its target "
+        "restraint current (set above), so it lands precisely on the CAL. line — "
+        "matching how a real commissioning test report is typically built."
+    )
 
     # -------------------------------------------------------------
     # AUTO-SWEEP FULL CURVE TEST TABLE
@@ -722,47 +788,3 @@ with tab2:
             file_name=f"87G_Sweep_Test_Table_{datetime.datetime.now().strftime('%Y%m%d_%H%M')}.csv",
             mime="text/csv"
         )
-
-        # -------------------------------------------------------------
-        # DIFFERENTIAL SLOPE CHARACTERISTIC CURVE — mirrors the commissioning test
-        # report format: a smooth calculated ("CAL.") curve with each phase's actual
-        # current reading overlaid on it, same as the Live Vector Simulation tab's
-        # chart. Uses the settings from the sidebar (relay settings, generator
-        # ratings, CT settings) and the phase currents entered in the Live Vector
-        # Simulation tab. Uses the same units toggle (pu / Secondary Amps) chosen
-        # there too, so both charts stay consistent.
-        # -------------------------------------------------------------
-        st.markdown("#### 📈 Differential Slope Characteristic Curve")
-        df_sweep = st.session_state["sweep_df"]
-
-        curve_x_pu = np.linspace(0, float(df_sweep["I_rest (pu)"].max()), 300)
-        curve_y_pu = [relay.calculate_trip_threshold(x) for x in curve_x_pu]
-        curve_x = curve_x_pu * amps_base if use_amps else curve_x_pu
-        curve_y = np.array(curve_y_pu) * amps_base if use_amps else np.array(curve_y_pu)
-
-        sweep_fig = go.Figure()
-        sweep_fig.add_trace(go.Scatter(
-            x=curve_x, y=curve_y, mode="lines", name="CAL.",
-            line=dict(color="#2E8B57", width=3)
-        ))
-
-        phase_colors = {"Phase A": "#D63384", "Phase B": "#6C757D", "Phase C": "#1E3A8A"}
-        phase_symbols = {"Phase A": "square", "Phase B": "triangle-up", "Phase C": "square"}
-        for p in phases:
-            e = evals[p]
-            px = e["i_rest_pu"] * amps_base if use_amps else e["i_rest_pu"]
-            py = e["i_op_pu"] * amps_base if use_amps else e["i_op_pu"]
-            sweep_fig.add_trace(go.Scatter(
-                x=[px], y=[py], mode="markers", name=p,
-                marker=dict(size=12, color=phase_colors[p], symbol=phase_symbols[p]),
-                hovertemplate=f"<b>{p}</b><br>I_rest: %{{x:.3f}} {unit_label}<br>I_op: %{{y:.3f}} {unit_label}<br>State: {e['status']}<extra></extra>"
-            ))
-
-        sweep_fig.update_layout(
-            title="Differential Slope Characteristic Curve",
-            xaxis_title=f"Restraint Current ({unit_label})",
-            yaxis_title=f"Diff. Current ({unit_label})",
-            template="plotly_white",
-            height=450
-        )
-        st.plotly_chart(sweep_fig, use_container_width=True)
